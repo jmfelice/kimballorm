@@ -4,7 +4,7 @@ from src.util.read_file import read_file
 import os
 
 
-def publish_stored_procedure(file_name, eng, directory = "../sql_stored_procedures_source_tables/"):
+def publish_stored_procedure(file_name, eng, directory = "../sql/stored_procedures_source_tables/"):
     print(f"Publishing Stored Procedure from file: {file_name}")
 
     Session = sessionmaker(bind = eng)
