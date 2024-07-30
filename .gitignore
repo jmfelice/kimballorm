@@ -110,6 +110,5 @@ ENV/
 
 # utility files
 untracked_docs/
-untracked_docs/setup_project.py
-*.sql
+
 

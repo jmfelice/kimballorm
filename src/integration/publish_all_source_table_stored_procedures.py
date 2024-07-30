@@ -1,4 +1,4 @@
-from src.integration.connect import connect_to_redshift
+from src.util.connect import connect_to_redshift
 from sqlalchemy.orm import sessionmaker
 from src.util.read_file import read_file
 import os

@@ -1,7 +1,7 @@
 from src.kimaballorm.orm import DimAccountClass
 from sqlalchemy.schema import CreateTable, DropTable
 from sqlalchemy.orm import sessionmaker
-from src.integration.connect import connect_to_redshift
+from src.util.connect import connect_to_redshift
 import sqlfluff
 
 
