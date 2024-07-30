@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE finance_etl.sp_create_fact_acquisition_cash_flow()
+CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_fact_acquisition_cash_flow()
 AS $$
 BEGIN
 

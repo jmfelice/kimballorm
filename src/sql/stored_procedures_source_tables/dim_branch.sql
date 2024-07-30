@@ -173,7 +173,5 @@ BEGIN
     where f.branch_count = 1
     ;
 
-RAISE INFO '%', v_insert_query;
-EXECUTE v_insert_query;
 END;
 $$

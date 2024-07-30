@@ -107,4 +107,5 @@ class SyncSCD1(UtilityBase):
             .values(active = 0)
             .where(and_(*[target_table.get_column(col) == cte.c[col] for col in primary_key_columns]))
         )
+
         return [soft_delete_stmt]

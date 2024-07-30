@@ -1,7 +1,7 @@
-CREATE OR REPLACE PROCEDURE finance_etl.sp_create_fact_balance_sheet()
+CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_fact_balance_sheet()
 AS $$
 BEGIN
-CALL finance_etl.sp_create_fact_balance_sheet_beginning_balance();
+CALL finance_etl.sp_populate_source_table_fact_balance_sheet_beginning_balance();
 
 insert into finance_etl.fact_balance_sheet_source
 (

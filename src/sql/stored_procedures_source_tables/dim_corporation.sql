@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE finance_etl.sp_create_dim_corporation()
+CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_dim_corporation()
 AS $$
 BEGIN
 
@@ -19,7 +19,7 @@ BEGIN
     'None' as corporation_name,
     'None' as corporation_abbr,
     -1 as elimination_branch,
-    0 as federal_id_number
+    0 as federal_id_number,
     0 as active
 
     union all

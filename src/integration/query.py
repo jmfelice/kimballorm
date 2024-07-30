@@ -3,7 +3,8 @@ from src.util.read_file import read_file
 import pandas as pd
 
 
-file_name = "dim_product_line.sql"
+# file_name = "dim_product_line.sql"
+file_name = "dim_account.sql"
 
 if __name__ == '__main__':
     directory = "../sql/queries/"

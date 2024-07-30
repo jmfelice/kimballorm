@@ -12,7 +12,7 @@ from .mixin_scd2_crud import SyncSCD2
 Base = declarative_base()
 
 
-class DimAccountMixin(object, SyncSCD1):
+class DimAccountMixin(object):
     gl_account_id_key = Column(Integer, primary_key=True, nullable=False)
     gl_account_id = Column(String(10), primary_key=False, nullable=True)
     gl_account_description = Column(String(50), primary_key=False, nullable=True)
@@ -23,7 +23,7 @@ class DimAccountMixin(object, SyncSCD1):
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "gl_account_id"},)
 
 
-class DimAccount(Base, DimAccountMixin):
+class DimAccount(Base, DimAccountMixin, SyncSCD1):
     __tablename__ = "dim_account"
     __table_args__ = (
         UniqueConstraint("gl_account_id"),
@@ -31,16 +31,16 @@ class DimAccount(Base, DimAccountMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimAccountSource
 
 
-class DimAccountSource(Base, DimAccountMixin):
+class DimAccountSource(Base, DimAccountMixin, SyncSCD1):
     __tablename__ = "dim_account_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimAccountClassMixin(object, SyncSCD1):
+class DimAccountClassMixin(object):
     account_class_key = Column(Integer, primary_key=True, nullable=False)
     account_class = Column(String(1), primary_key=False, nullable=True)
     account_class_description = Column(String(9), primary_key=False, nullable=True)
@@ -49,7 +49,7 @@ class DimAccountClassMixin(object, SyncSCD1):
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": ["account_class"]},)
 
 
-class DimAccountClass(Base, DimAccountClassMixin):
+class DimAccountClass(Base, DimAccountClassMixin, SyncSCD1):
     __tablename__ = "dim_account_class"
     __table_args__ = (
         UniqueConstraint("account_class"),
@@ -57,16 +57,16 @@ class DimAccountClass(Base, DimAccountClassMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimAccountClassSource
 
 
-class DimAccountClassSource(Base, DimAccountClassMixin):
+class DimAccountClassSource(Base, DimAccountClassMixin, SyncSCD1):
     __tablename__ = "dim_account_class_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimBranchMixin(object, SyncSCD2):
+class DimBranchMixin(object):
     branch_key = Column(Integer, primary_key=True, nullable=False)
     branch = Column(Integer, primary_key=False, nullable=True)
     branch_abb = Column(String(30), primary_key=False, nullable=True)
@@ -103,7 +103,7 @@ class DimBranchMixin(object, SyncSCD2):
     __custom_info__ = ({"table_type": "SCD_2", "natural_key": "branch"},)
 
 
-class DimBranch(Base, DimBranchMixin):
+class DimBranch(Base, DimBranchMixin, SyncSCD2):
     __tablename__ = "dim_branch"
     __table_args__ = (
         UniqueConstraint("branch", "scd2_start_date", "scd2_end_date"),
@@ -111,16 +111,16 @@ class DimBranch(Base, DimBranchMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimBranchSource
 
 
-class DimBranchSource(Base, DimBranchMixin):
+class DimBranchSource(Base, DimBranchMixin, SyncSCD2):
     __tablename__ = "dim_branch_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimCalendarMixin(object, SyncSCD1):
+class DimCalendarMixin(object):
     date_key = Column(Integer, primary_key=True, nullable=False)
     calendar_date = Column(Date, primary_key=False, nullable=True)
     year = Column(Integer, primary_key=False, nullable=True)
@@ -178,7 +178,7 @@ class DimCalendarMixin(object, SyncSCD1):
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "calendar_date"},)
 
 
-class DimCalendar(Base, DimCalendarMixin):
+class DimCalendar(Base, DimCalendarMixin, SyncSCD1):
     __tablename__ = "dim_calendar"
     __table_args__ = (
         UniqueConstraint("calendar_date"),
@@ -186,16 +186,16 @@ class DimCalendar(Base, DimCalendarMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimCalendarSource
 
 
-class DimCalendarSource(Base, DimCalendarMixin):
+class DimCalendarSource(Base, DimCalendarMixin, SyncSCD1):
     __tablename__ = "dim_calendar_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimCategoryMixin(object, SyncSCD1):
+class DimCategoryMixin(object):
     category_key = Column(Integer, primary_key=True, nullable=False)
     category = Column(String(50), primary_key=False, nullable=True)
     parent_category = Column(String(50), primary_key=False, nullable=True)
@@ -207,7 +207,7 @@ class DimCategoryMixin(object, SyncSCD1):
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "category"},)
 
 
-class DimCategory(Base, DimCategoryMixin):
+class DimCategory(Base, DimCategoryMixin, SyncSCD1):
     __tablename__ = "dim_category"
     __table_args__ = (
         UniqueConstraint("category"),
@@ -215,16 +215,16 @@ class DimCategory(Base, DimCategoryMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimCategorySource
 
 
-class DimCategorySource(Base, DimCategoryMixin):
+class DimCategorySource(Base, DimCategoryMixin, SyncSCD1):
     __tablename__ = "dim_category_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimCorporationMixin(object, SyncSCD1):
+class DimCorporationMixin(object):
     corporation_key = Column(Integer, primary_key=True, nullable=False)
     corporation = Column(Integer, primary_key=False, nullable=True)
     corporation_name = Column(String(50), primary_key=False, nullable=True)
@@ -235,7 +235,7 @@ class DimCorporationMixin(object, SyncSCD1):
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "corporation"},)
 
 
-class DimCorporation(Base, DimCorporationMixin):
+class DimCorporation(Base, DimCorporationMixin, SyncSCD1):
     __tablename__ = "dim_corporation"
     __table_args__ = (
         UniqueConstraint("corporation"),
@@ -243,16 +243,16 @@ class DimCorporation(Base, DimCorporationMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimCorporationSource
 
 
-class DimCorporationSource(Base, DimCorporationMixin):
+class DimCorporationSource(Base, DimCorporationMixin, SyncSCD1):
     __tablename__ = "dim_corporation_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimIndirectCashFlowCategoryMixin(object, SyncSCD1):
+class DimIndirectCashFlowCategoryMixin(object):
     indirect_cash_flow_category_key = Column(Integer, primary_key=True, nullable=False)
     indirect_cash_flow_category = Column(String(50), primary_key=False, nullable=True)
     parent_indirect_cash_flow_category = Column(
@@ -269,7 +269,7 @@ class DimIndirectCashFlowCategoryMixin(object, SyncSCD1):
     )
 
 
-class DimIndirectCashFlowCategory(Base, DimIndirectCashFlowCategoryMixin):
+class DimIndirectCashFlowCategory(Base, DimIndirectCashFlowCategoryMixin, SyncSCD1):
     __tablename__ = "dim_indirect_cash_flow_category"
     __table_args__ = (
         UniqueConstraint("indirect_cash_flow_category"),
@@ -277,23 +277,23 @@ class DimIndirectCashFlowCategory(Base, DimIndirectCashFlowCategoryMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimIndirectCashFlowCategorySource
 
 
-class DimIndirectCashFlowCategorySource(Base, DimIndirectCashFlowCategoryMixin):
+class DimIndirectCashFlowCategorySource(Base, DimIndirectCashFlowCategoryMixin, SyncSCD1):
     __tablename__ = "dim_indirect_cash_flow_category_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimJournalDescriptionMixin(object, SyncSCD1):
+class DimJournalDescriptionMixin(object):
     description_key = Column(Integer, primary_key=True, nullable=False)
     description = Column(String(256), primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "description"},)
 
 
-class DimJournalDescription(Base, DimJournalDescriptionMixin):
+class DimJournalDescription(Base, DimJournalDescriptionMixin, SyncSCD1):
     __tablename__ = "dim_journal_description"
     __table_args__ = (
         UniqueConstraint("description"),
@@ -301,16 +301,16 @@ class DimJournalDescription(Base, DimJournalDescriptionMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimJournalDescriptionSource
 
 
-class DimJournalDescriptionSource(Base, DimJournalDescriptionMixin):
+class DimJournalDescriptionSource(Base, DimJournalDescriptionMixin, SyncSCD1):
     __tablename__ = "dim_journal_description_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimJournalEntryMixin(object, SyncSCD1):
+class DimJournalEntryMixin(object):
     journal_entry_id_key = Column(Integer, primary_key=True, nullable=False)
     journal_entry_id = Column(
         Numeric(precision=28, scale=0), primary_key=False, nullable=True
@@ -319,7 +319,7 @@ class DimJournalEntryMixin(object, SyncSCD1):
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "journal_entry_id"},)
 
 
-class DimJournalEntry(Base, DimJournalEntryMixin):
+class DimJournalEntry(Base, DimJournalEntryMixin, SyncSCD1):
     __tablename__ = "dim_journal_entry"
     __table_args__ = (
         UniqueConstraint("journal_entry_id"),
@@ -327,16 +327,16 @@ class DimJournalEntry(Base, DimJournalEntryMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimJournalEntrySource
 
 
-class DimJournalEntrySource(Base, DimJournalEntryMixin):
+class DimJournalEntrySource(Base, DimJournalEntryMixin, SyncSCD1):
     __tablename__ = "dim_journal_entry_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimProductLineMixin(object, SyncSCD2):
+class DimProductLineMixin(object):
     product_line_key = Column(Integer, primary_key=True, nullable=False)
     product_line = Column(Integer, primary_key=False, nullable=True)
     product_line_description = Column(String(100), primary_key=False, nullable=True)
@@ -348,7 +348,7 @@ class DimProductLineMixin(object, SyncSCD2):
     __custom_info__ = ({"table_type": "SCD_2", "natural_key": "product_line"},)
 
 
-class DimProductLine(Base, DimProductLineMixin):
+class DimProductLine(Base, DimProductLineMixin, SyncSCD2):
     __tablename__ = "dim_product_line"
     __table_args__ = (
         UniqueConstraint("product_line", "scd2_start_date", "scd2_end_date"),
@@ -356,16 +356,16 @@ class DimProductLine(Base, DimProductLineMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return DimProductLineSource
 
 
-class DimProductLineSource(Base, DimProductLineMixin):
+class DimProductLineSource(Base, DimProductLineMixin, SyncSCD2):
     __tablename__ = "dim_product_line_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class BridgeCategoryMixin(object, SyncFact):
+class BridgeCategoryMixin(object):
     bridge_category_key = Column(
         Integer, primary_key=True, nullable=True, redshift_identity=(1, 1)
     )
@@ -380,7 +380,7 @@ class BridgeCategoryMixin(object, SyncFact):
     __custom_info__ = ({"table_type": "Bridge"},)
 
 
-class BridgeCategory(Base, BridgeCategoryMixin):
+class BridgeCategory(Base, BridgeCategoryMixin, SyncFact):
     __tablename__ = "bridge_category"
     __table_args__ = (
         ForeignKeyConstraint(
@@ -394,16 +394,16 @@ class BridgeCategory(Base, BridgeCategoryMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return BridgeCategorySource
 
 
-class BridgeCategorySource(Base, BridgeCategoryMixin):
+class BridgeCategorySource(Base, BridgeCategoryMixin, SyncFact):
     __tablename__ = "bridge_category_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class BridgeIndirectCashFlowCategoryMixin(object, SyncFact):
+class BridgeIndirectCashFlowCategoryMixin(object):
     bridge_indirect_cash_flow_category_key = Column(
         Integer, primary_key=True, nullable=True, redshift_identity=(1, 1)
     )
@@ -423,7 +423,7 @@ class BridgeIndirectCashFlowCategoryMixin(object, SyncFact):
     __custom_info__ = ({"table_type": "Bridge"},)
 
 
-class BridgeIndirectCashFlowCategory(Base, BridgeIndirectCashFlowCategoryMixin):
+class BridgeIndirectCashFlowCategory(Base, BridgeIndirectCashFlowCategoryMixin, SyncFact):
     __tablename__ = "bridge_indirect_cash_flow_category"
     __table_args__ = (
         ForeignKeyConstraint(
@@ -445,16 +445,16 @@ class BridgeIndirectCashFlowCategory(Base, BridgeIndirectCashFlowCategoryMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return BridgeIndirectCashFlowCategorySource
 
 
-class BridgeIndirectCashFlowCategorySource(Base, BridgeIndirectCashFlowCategoryMixin):
+class BridgeIndirectCashFlowCategorySource(Base, BridgeIndirectCashFlowCategoryMixin, SyncFact):
     __tablename__ = "bridge_indirect_cash_flow_category_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class BridgeMapCashFlowMixin(object, SyncFact):
+class BridgeMapCashFlowMixin(object):
     bridge_map_cash_flow_key = Column(
         Integer, primary_key=True, nullable=True, redshift_identity=(1, 1)
     )
@@ -464,7 +464,7 @@ class BridgeMapCashFlowMixin(object, SyncFact):
     __custom_info__ = ({"table_type": "Bridge"},)
 
 
-class BridgeMapCashFlow(Base, BridgeMapCashFlowMixin):
+class BridgeMapCashFlow(Base, BridgeMapCashFlowMixin, SyncFact):
     __tablename__ = "bridge_map_cash_flow"
     __table_args__ = (
         ForeignKeyConstraint(
@@ -481,16 +481,16 @@ class BridgeMapCashFlow(Base, BridgeMapCashFlowMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return BridgeMapCashFlow
 
 
-class BridgeMapCashFlowSource(Base, BridgeMapCashFlowMixin):
+class BridgeMapCashFlowSource(Base, BridgeMapCashFlowMixin, SyncFact):
     __tablename__ = "bridge_map_cash_flow_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class FactAcquisitionCashFlowMixin(object, SyncFact):
+class FactAcquisitionCashFlowMixin(object):
     fact_acquisition_cash_flow_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
@@ -503,7 +503,7 @@ class FactAcquisitionCashFlowMixin(object, SyncFact):
     __custom_info__ = ({"table_type": "Fact"},)
 
 
-class FactAcquisitionCashFlow(Base, FactAcquisitionCashFlowMixin):
+class FactAcquisitionCashFlow(Base, FactAcquisitionCashFlowMixin, SyncFact):
     __tablename__ = "fact_acquisition_cash_flow"
     __table_args__ = (
         ForeignKeyConstraint(
@@ -525,16 +525,16 @@ class FactAcquisitionCashFlow(Base, FactAcquisitionCashFlowMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return FactAcquisitionCashFlowSource
 
 
-class FactAcquisitionCashFlowSource(Base, FactAcquisitionCashFlowMixin):
+class FactAcquisitionCashFlowSource(Base, FactAcquisitionCashFlowMixin, SyncFact):
     __tablename__ = "fact_acquisition_cash_flow_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class FactBalanceSheetMixin(object, SyncFact):
+class FactBalanceSheetMixin(object):
     fact_balance_sheet_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
@@ -553,7 +553,7 @@ class FactBalanceSheetMixin(object, SyncFact):
     __custom_info__ = ({"table_type": "Fact"},)
 
 
-class FactBalanceSheet(Base, FactBalanceSheetMixin):
+class FactBalanceSheet(Base, FactBalanceSheetMixin, SyncFact):
     __tablename__ = "fact_balance_sheet"
     __table_args__ = (
         ForeignKeyConstraint(("branch_key",), ["finance_dw.dim_branch.branch_key"]),
@@ -580,16 +580,16 @@ class FactBalanceSheet(Base, FactBalanceSheetMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return FactBalanceSheetSource
 
 
-class FactBalanceSheetSource(Base, FactBalanceSheetMixin):
+class FactBalanceSheetSource(Base, FactBalanceSheetMixin, SyncFact):
     __tablename__ = "fact_balance_sheet_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class FactCashFlowMixin(object, SyncFact):
+class FactCashFlowMixin(object):
     fact_cash_flow_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
@@ -611,7 +611,7 @@ class FactCashFlowMixin(object, SyncFact):
     __custom_info__ = ({"table_type": "Fact"},)
 
 
-class FactCashFlow(Base, FactCashFlowMixin):
+class FactCashFlow(Base, FactCashFlowMixin, SyncFact):
     __tablename__ = "fact_cash_flow"
     __table_args__ = (
         ForeignKeyConstraint(
@@ -645,16 +645,16 @@ class FactCashFlow(Base, FactCashFlowMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return FactCashFlowSource
 
 
-class FactCashFlowSource(Base, FactCashFlowMixin):
+class FactCashFlowSource(Base, FactCashFlowMixin, SyncFact):
     __tablename__ = "fact_cash_flow_source"
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class FactGeneralLedgerMixin(object, SyncFact):
+class FactGeneralLedgerMixin(object):
     fact_general_ledger_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
@@ -711,7 +711,7 @@ class FactGeneralLedger(Base, FactGeneralLedgerMixin, SyncFact):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return FactGeneralLedgerSource
 
 
@@ -720,7 +720,7 @@ class FactGeneralLedgerSource(Base, FactGeneralLedgerMixin, SyncFact):
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class FactIncomeSummaryMixin(object, SyncFact):
+class FactIncomeSummaryMixin(object):
     fact_income_summary_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
@@ -738,7 +738,7 @@ class FactIncomeSummaryMixin(object, SyncFact):
     __custom_info__ = ({"table_type": "Fact"},)
 
 
-class FactIncomeSummary(Base, FactIncomeSummaryMixin):
+class FactIncomeSummary(Base, FactIncomeSummaryMixin, SyncFact):
     __tablename__ = "fact_income_summary"
     __table_args__ = (
         ForeignKeyConstraint(("branch_key",), ["finance_dw.dim_branch.branch_key"]),
@@ -758,11 +758,11 @@ class FactIncomeSummary(Base, FactIncomeSummaryMixin):
     )
 
     @classmethod
-    def get_source_table(cls):
+    def get_source_entity(cls):
         return FactIncomeSummarySource
 
 
-class FactIncomeSummarySource(Base, FactIncomeSummaryMixin):
+class FactIncomeSummarySource(Base, FactIncomeSummaryMixin, SyncFact):
     __tablename__ = "fact_income_summary_source"
     __table_args__ = ({"schema": "finance_etl"},)
 

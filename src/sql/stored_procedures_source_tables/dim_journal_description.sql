@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE finance_etl.sp_create_dim_journal_description()
+CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_dim_journal_description()
 AS $$
 BEGIN
 

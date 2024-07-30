@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE finance_etl.sp_create_fact_general_ledger()
+CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_fact_general_ledger()
 AS $$
 BEGIN
 
