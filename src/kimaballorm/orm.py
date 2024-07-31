@@ -482,7 +482,7 @@ class BridgeMapCashFlow(Base, BridgeMapCashFlowMixin, SyncFact):
 
     @classmethod
     def get_source_entity(cls):
-        return BridgeMapCashFlow
+        return BridgeMapCashFlowSource
 
 
 class BridgeMapCashFlowSource(Base, BridgeMapCashFlowMixin, SyncFact):

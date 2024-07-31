@@ -24,6 +24,13 @@ class SyncFact(UtilityBase):
         unique_columns = self.get_unique_column_names()
         primary_key_columns = self.get_primary_key_column_names()
 
+        # fact table primary keys are autoincremented.  Therefore, we cannot insert those columns.
+        select_clause = [
+            source_alias.get_column(column)
+            for column in source_alias.get_all_column_names()
+            if column not in primary_key_columns
+        ]
+
         join_clause = [
             self.coalesce_to_default(target_alias.get_column(col)) ==
             self.coalesce_to_default(source_alias.get_column(col))
@@ -35,8 +42,15 @@ class SyncFact(UtilityBase):
             for col in primary_key_columns
         ]
 
+        # fact table primary keys are autoincremented.  Therefore, we cannot insert those columns.
+        insert_columns = [
+            target_table.get_column(column)
+            for column in target_table.get_all_column_names()
+            if column not in primary_key_columns
+        ]
+
         insert_select = (
-            select(source_alias)
+            select(select_clause)
             .select_from(source_alias)
             .join(target_alias, and_(*join_clause), isouter=True, full=True)
             .where(and_(*where_clause))
@@ -45,7 +59,7 @@ class SyncFact(UtilityBase):
         insert_stmt = (
             insert(target_table)
             .from_select(
-                target_table.get_all_columns(),
+                insert_columns,
                 insert_select)
             )
         return [insert_stmt]
@@ -95,16 +109,16 @@ class SyncFact(UtilityBase):
             for col in primary_key_columns
         ]
 
-        cte = (
+        subquery = (
             select(target_alias.get_columns(primary_key_columns))
             .select_from(target_alias)
             .join(source_alias, and_(*join_clause), isouter = True, full = True)
             .where(and_(*where_clause))
-            .cte("soft_delete_cte")
-        )
+        ).alias("soft_delete_subquery")
 
+        # Define the delete statement using the subquery
         delete_stmt = (
             delete(target_table)
-            .where(and_(*[target_table.get_column(col) == cte.c[col] for col in primary_key_columns]))
+            .where(and_(*[target_table.get_column(col) == subquery.c[col] for col in primary_key_columns]))
         )
         return [delete_stmt]

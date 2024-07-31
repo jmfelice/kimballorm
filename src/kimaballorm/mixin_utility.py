@@ -1,4 +1,5 @@
 from sqlalchemy import PrimaryKeyConstraint, UniqueConstraint, ForeignKeyConstraint, func, inspect
+from sqlalchemy import or_, and_, null
 from sqlalchemy.orm.util import AliasedClass
 from typing import List
 from .default_data_types import DEFAULT_VALUES
@@ -143,9 +144,9 @@ class UtilityBase:
 
         rslt = [
             name for name in all_column_names if
-            name not in unique_column_names and
-            name not in primary_key_column_names and
-            name not in natural_key_column_names
+            name not in (unique_column_names or []) and
+            name not in (primary_key_column_names or []) and
+            name not in (natural_key_column_names or [])
         ]
 
         return rslt
@@ -192,6 +193,14 @@ class UtilityBase:
     def get_source_table_name(cls):
         table_name = cls.get_table_name()
         return f"finance_etl.{table_name}_source"
+
+    @classmethod
+    def join_on_nulls(cls, source_column, target_column):
+        join_condition = or_(
+            source_column == target_column,
+            and_(source_column == null(), target_column == null()).self_group()
+        ).self_group()
+        return join_condition
 
     def compile_sql(self, statements, engine=None):
         compiled_statements = []

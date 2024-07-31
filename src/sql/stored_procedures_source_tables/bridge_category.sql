@@ -28,7 +28,7 @@ WITH RECURSIVE base as
     where c.category is not null
 )
 
-,  hierarchy  (category_key, category, parent_category_key, parent_category) as
+,  hierarchy (category_key, category, parent_category_key, parent_category) as
 (
     select
     category_key,

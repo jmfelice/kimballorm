@@ -3,7 +3,9 @@ from sqlalchemy.schema import CreateTable, DropTable
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
 from src.util.connect import connect_to_redshift
+from src.util.read_file import read_file
 import sqlfluff
+import pandas as pd
 
 
 def generate_crud_statements(target_table):
@@ -33,7 +35,7 @@ def generate_call_procedure_statement(procedure_name, **kwargs):
         params = ", ".join(f"{key}=>{value}" for key, value in kwargs.items())
         proc = f"CALL {procedure_name}({params});"
     else:
-        proc = f"CALL {procedure_name}();"
+        proc = f"CALL {procedure_name};"
 
     return text(proc)
 
@@ -42,7 +44,7 @@ def update_target_table(entity_orm, eng):
     source_entity = entity_orm().get_source_entity()
     schema_name = source_entity().get_schema_name()
     table_name = entity_orm().get_table_name()
-    sp_populate_source_table_name = f"{schema_name}.sp_populate_source_table_{table_name}"
+    sp_populate_source_table_name = f"{schema_name}.sp_populate_source_table_{table_name}()"
 
     compiled_statements = generate_crud_statements(entity_orm)
     truncate_statement = generate_truncate_statement(source_entity)
@@ -66,15 +68,15 @@ def update_target_table_from_archive(entity_orm, eng, year = None, month = None)
     schema_name = source_entity().get_schema_name()
     table_name = entity_orm().get_table_name()
     sp_populate_source_table_name = (
-        f"{schema_name}.sp_populate_source_table_{table_name}"
+        f"{schema_name}.sp_populate_source_table_{table_name}_from_archive"
         f"("
-        f"v_year = {year}, "
-        f"v_month = {month}"
+        f"'{year}', "
+        f"'{month}'"
         f")"
     )
 
     compiled_statements = generate_crud_statements(entity_orm)
-    truncate_statement = generate_truncate_statement(entity_orm)
+    truncate_statement = generate_truncate_statement(source_entity)
     procedure_statement = generate_call_procedure_statement(sp_populate_source_table_name)
 
     Session = sessionmaker(bind=eng)
@@ -136,55 +138,33 @@ def print_create_statement(entity_orm, eng):
     print(sqlfluff.fix(printable_statements))
 
 
+def get_dates_for_archived_schemas(iseries_table_name, eng):
+    file_name = "mhf_schemas.sql"
+    directory = "../sql/queries/"
+    query = read_file(directory + file_name)
+
+    df = pd.read_sql(text(query), eng)
+    df = df.loc[df["iseries_table_name"] == iseries_table_name, ["year", "month"]]
+    return df["year"], df["month"]
+
+
 if __name__ == '__main__':
     engine = connect_to_redshift()
 
-    # SCD1_dimensions = [
-    #     DimAccount,
-    #     DimAccountClass,
-    #     DimCategory,
-    #     DimCalendar,
-    #     DimCorporation,
-    #     DimIndirectCashFlowCategory,
-    #     DimJournalEntry,
-    #     DimJournalDescription
-    # ]
-    #
-    # for dimension in SCD1_dimensions:
-    #     # recreate_target_table(dimension, engine)
-    #     # recreate_source_table(dimension, engine)
-    #     update_target_table(dimension, engine)
+    year, month = get_dates_for_archived_schemas("reflines", engine)
+    year = [str(x).ljust(4, '0') for x in year]
+    month = [str(x).ljust(2, '0') for x in month]
 
-    # SCD2_dimensions = [
-    #     DimBranch,
-    #     DimProductLine
-    # ]
-    #
-    # for dimension in SCD2_dimensions:
-    #     recreate_target_table(dimension, engine)
-    #     recreate_source_table(dimension, engine)
-    #     update_target_table(dimension, engine)
+    year = year[43]
+    month = month[43]
 
-    # bridges = [
-    #     BridgeCategory,
-    #     BridgeMapCashFlow,
-    #     BridgeIndirectCashFlowCategory
-    # ]
-    #
-    # for bridge in bridges:
-    #     recreate_target_table(bridge, engine)
-    #     recreate_source_table(bridge, engine)
-    #     update_target_table(bridge, engine)
+    SCD2_dimensions = [
+        # DimBranch,
+        DimProductLine
+    ]
 
-    # facts = [
-    #     FactGeneralLedger,
-    #     FactBalanceSheet,
-    #     FactAcquisitionCashFlow,
-    #     FactCashFlow,
-    #     FactIncomeSummary
-    # ]
-    #
-    # for fact in facts:
-    #     recreate_target_table(fact, engine)
-    #     recreate_source_table(fact, engine)
-    #     update_target_table(fact, engine)
+    for dimension in SCD2_dimensions:
+        # recreate_target_table(dimension, engine)
+        # recreate_source_table(dimension, engine)
+        update_target_table_from_archive(dimension, engine, year, month)
+        # print_crud_statements(dimension, engine)
