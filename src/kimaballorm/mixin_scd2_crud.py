@@ -35,34 +35,22 @@ class SyncSCD2(UtilityBase):
         ]
 
         join_clause = [
-            # target_alias.get_column(col) == source_alias.get_column(col)
             self.join_on_nulls(source_alias.get_column(col), target_alias.get_column(col))
             for col in natural_key_columns
         ]
 
-        # when comparing natural keys there is a problem is null exists.
-        # since they default to either '' if it's a string or 0 if it's a number
-        # that defuault causes row collisions if '' or 0 already exists in the dataset.
-        # and since the first row of every dimension must be a null, then the comparison
-        # needs to be removed and that null row should be added separately.
         primary_keys_are_null = [target_alias.get_column(col) == null() for col in primary_key_columns]
-        source_natural_keys_are_not_null = [source_alias.get_column(col) != null() for col in natural_key_columns]
 
         insert_select = (
             select(*select_clause)
             .select_from(source_alias)
             .join(target_alias, and_(*join_clause), isouter = True, full = False)
-            .where(and_(
-                # *source_natural_keys_are_not_null,
-                or_(*primary_keys_are_null)
-            ))
+            .where(and_(or_(*primary_keys_are_null)))
         )
 
         insert_stmt = (
             insert(target_table)
-            .from_select(
-                target_table.get_all_columns(),
-                insert_select)
+            .from_select(target_table.get_all_columns(),insert_select)
         )
         return [insert_stmt]
 
@@ -78,14 +66,7 @@ class SyncSCD2(UtilityBase):
         ####################
         # INSERT new columns
         ####################
-        select_clause = [
-            target_alias.get_column(column) if column in primary_key_columns
-            else source_alias.get_column(column)
-            for column in source_alias.get_all_column_names()
-        ]
-
         equal_cols = [
-            # target_alias.get_column(col) == source_alias.get_column(col)
             self.join_on_nulls(source_alias.get_column(col), target_alias.get_column(col))
             for col in natural_key_columns
         ]
@@ -100,30 +81,6 @@ class SyncSCD2(UtilityBase):
         where_condition = and_(
             target_alias.get_column("current_flag") == 1,
             or_(*changed_cols)
-        )
-
-        source_primary_keys = [
-            source_alias.get_column(column).label(f"source_{column}")
-            for column in primary_key_columns
-        ]
-
-        target_primary_keys = [
-            target_alias.get_column(column) .label(f"target_{column}")
-            for column in primary_key_columns
-        ]
-
-        source_columns = [
-            source_alias.get_column(column)
-            for column in source_alias.get_all_column_names()
-            if column not in primary_key_columns
-        ]
-
-        select_for_update = (
-            select(select_clause)
-            .select_from(target_alias)
-            .join(source_alias, and_(*equal_cols), isouter = False, full = False)
-            .where(where_condition)
-            .alias("update_old_rows")
         )
 
         select_for_insert = (
@@ -144,34 +101,22 @@ class SyncSCD2(UtilityBase):
         ########################
         # UPDATE all old columns
         ########################
-        # equal_cols = [
-        #     # target_alias.get_column(col) == source_alias.get_column(col)
-        #     self.join_on_nulls(source_alias.get_column(col), target_table.get_column(col))
-        #     for col in natural_key_columns
-        # ]
-        #
-        # natural_keys_not_null = [
-        #     and_(target_table.get_column(col) != null(), source_alias.get_column(col) != null())
-        #     for col in natural_key_columns
-        # ]
-        #
-        # changed_cols = [
-        #     self.coalesce_to_default(target_table.get_column(col)) !=
-        #     self.coalesce_to_default(source_alias.get_column(col))
-        #     for col in change_columns
-        #     if col not in reserved_columns
-        # ]
-        #
-        # where_condition = and_(
-        #     *equal_cols,
-        #     # *natural_keys_not_null,
-        #     target_table.get_column("current_flag") == 1,
-        #     or_(*changed_cols)
-        # )
+        select_clause = [
+            target_alias.get_column(column) if column in primary_key_columns
+            else source_alias.get_column(column)
+            for column in source_alias.get_all_column_names()
+        ]
+
+        select_for_update = (
+            select(select_clause)
+            .select_from(target_alias)
+            .join(source_alias, and_(*equal_cols), isouter = False, full = False)
+            .where(where_condition)
+            .alias("update_old_rows")
+        )
 
         equal_cols = [
             target_table.get_column(col) == select_for_update.c[col]
-            # self.join_on_nulls(select_stmt.c[col], target_table.get_column(col))
             for col in primary_key_columns
         ]
 
@@ -199,17 +144,17 @@ class SyncSCD2(UtilityBase):
         ]
 
         primary_keys_are_null = [target_alias.get_column(col) == null() for col in primary_key_columns]
-        target_natural_keys_are_not_null = [target_alias.get_column(col) != null() for col in natural_key_columns]
+
+        where_clause = and_(
+            target_alias.get_column("current_flag") == 1,
+            or_(*primary_keys_are_null)
+        )
 
         cte = (
             select(target_alias.get_columns(primary_key_columns))
             .select_from(target_alias)
             .join(source_alias, and_(*join_clause), isouter = True, full = False)
-            .where(and_(
-                # *target_natural_keys_are_not_null,
-                target_alias.get_column("current_flag") == 1,
-                or_(*primary_keys_are_null)
-            ))
+            .where(where_clause)
             .distinct()
             .cte("soft_delete_cte")
         )

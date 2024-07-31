@@ -176,15 +176,17 @@ if __name__ == '__main__':
     #     recreate_source_table(bridge, engine)
     #     update_target_table(bridge, engine)
 
-    # facts = [
-    #     FactGeneralLedger,
-    #     FactBalanceSheet,
-    #     FactAcquisitionCashFlow,
-    #     FactCashFlow,
-    #     FactIncomeSummary
-    # ]
-    #
-    # for fact in facts:
-    #     recreate_target_table(fact, engine)
-    #     recreate_source_table(fact, engine)
-    #     update_target_table(fact, engine)
+    facts = [
+        FactGeneralLedger
+        # FactBalanceSheet,
+        # FactAcquisitionCashFlow,
+        # FactCashFlow,
+        # FactIncomeSummary
+    ]
+
+    for fact in facts:
+        # recreate_target_table(fact, engine)
+        # recreate_source_table(fact, engine)
+        # update_target_table(fact, engine)
+        print_crud_statements(fact, engine)
+
