@@ -103,7 +103,7 @@ class SyncFact(UtilityBase):
 
         update_stmt = (
             update(target_table)
-            .values({col: source_alias.get_column(col) for col in change_columns})
+            .values({col: select_for_update.c[col] for col in change_columns})
             .where(and_(*equal_cols))
         )
         return [update_stmt]

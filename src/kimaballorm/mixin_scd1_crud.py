@@ -24,8 +24,7 @@ class SyncSCD1(UtilityBase):
         primary_key_columns = self.get_primary_key_column_names()
 
         join_clause = [
-            self.coalesce_to_default(target_alias.get_column(col)) ==
-            self.coalesce_to_default(source_alias.get_column(col))
+            self.join_on_nulls(source_alias.get_column(col), target_alias.get_column(col))
             for col in natural_key_columns
         ]
 
@@ -37,7 +36,7 @@ class SyncSCD1(UtilityBase):
         insert_select = (
             select(source_alias)
             .select_from(source_alias)
-            .join(target_alias, and_(*join_clause), isouter=True, full=True)
+            .join(target_alias, and_(*join_clause), isouter=True, full=False)
             .where(and_(*where_clause))
         )
 
@@ -51,28 +50,48 @@ class SyncSCD1(UtilityBase):
 
     def _generate_update_statement(self, source_table):
         target_table = self.__class__
+        target_alias = aliased(target_table, name="target")
         source_alias = aliased(source_table, name="source")
         natural_key_columns = self.get_natural_key_column_names()
         change_columns = self.get_change_column_names()
+        primary_key_columns = self.get_primary_key_column_names()
 
         equal_cols = [
-            self.coalesce_to_default(target_table.get_column(col)) ==
-            self.coalesce_to_default(source_alias.get_column(col))
+            self.join_on_nulls(source_alias.get_column(col), target_alias.get_column(col))
             for col in natural_key_columns
         ]
 
         changed_cols = [
-            self.coalesce_to_default(target_table.get_column(col)) !=
+            self.coalesce_to_default(target_alias.get_column(col)) !=
             self.coalesce_to_default(source_alias.get_column(col))
             for col in change_columns
         ]
 
-        where_condition = and_(*equal_cols, or_(*changed_cols))
+        select_clause = [
+            target_alias.get_column(column) if column in primary_key_columns
+            else source_alias.get_column(column)
+            for column in source_alias.get_all_column_names()
+        ]
+
+        where_condition = or_(*changed_cols)
+
+        select_for_update = (
+            select(select_clause)
+            .select_from(target_alias)
+            .join(source_alias, and_(*equal_cols), isouter = False, full = False)
+            .where(where_condition)
+            .alias("update_old_rows")
+        )
+
+        equal_cols = [
+            target_table.get_column(col) == select_for_update.c[col]
+            for col in primary_key_columns
+        ]
 
         update_stmt = (
             update(target_table)
-            .values({col: source_alias.get_column(col) for col in change_columns})
-            .where(where_condition)
+            .values({col: select_for_update.c[col] for col in change_columns})
+            .where(and_(*equal_cols))
         )
         return [update_stmt]
 
@@ -84,8 +103,7 @@ class SyncSCD1(UtilityBase):
         primary_key_columns = self.get_primary_key_column_names()
 
         join_clause = [
-            self.coalesce_to_default(target_alias.get_column(col)) ==
-            self.coalesce_to_default(source_alias.get_column(col))
+            self.join_on_nulls(source_alias.get_column(col), target_alias.get_column(col))
             for col in natural_key_columns
         ]
 
@@ -97,7 +115,7 @@ class SyncSCD1(UtilityBase):
         cte = (
             select(target_alias.get_columns(primary_key_columns))
             .select_from(target_alias)
-            .join(source_alias, and_(*join_clause), isouter = True, full = True)
+            .join(source_alias, and_(*join_clause), isouter = True, full = False)
             .where(and_(*where_clause, target_alias.get_column("active") == 1))
             .cte("soft_delete_cte")
         )

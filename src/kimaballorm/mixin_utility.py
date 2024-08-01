@@ -182,7 +182,7 @@ class UtilityBase:
     @classmethod
     def create_alias(cls, alias_name):
         from sqlalchemy.orm import aliased
-        return aliased(cls, name=alias_name)
+        return aliased(cls, name = alias_name)
 
     @classmethod
     def get_sp_populate_source_table(cls):
@@ -202,12 +202,17 @@ class UtilityBase:
         ).self_group()
         return join_condition
 
-    def compile_sql(self, statements, engine=None):
+    def compile_sql(self, statements, engine = None):
         compiled_statements = []
         for stmt in statements:
             if engine:
-                compiled_stmt = stmt.compile(engine, compile_kwargs={"literal_binds": True})
+                compiled_stmt = stmt.compile(
+                    engine,
+                    compile_kwargs = {"literal_binds": True}
+                )
             else:
-                compiled_stmt = stmt.compile(compile_kwargs={"literal_binds": True})
+                compiled_stmt = stmt.compile(
+                    compile_kwargs = {"literal_binds": True}
+                )
             compiled_statements.append(str(compiled_stmt))
         return compiled_statements
