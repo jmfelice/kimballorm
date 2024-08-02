@@ -4,7 +4,7 @@ from src.util.read_file import read_file
 import os
 
 
-def publish_stored_procedure(eng, directory = "../sql/stored_procedures_source_tables/"):
+def publish_stored_procedure(eng, directory = "../sql/stored_procedures_update_source_tables/"):
     Session = sessionmaker(bind = eng)
     session = Session()
     files = os.listdir(directory)

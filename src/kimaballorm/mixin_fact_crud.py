@@ -131,7 +131,7 @@ class SyncFact(UtilityBase):
             .join(source_alias, and_(*join_clause), isouter = True, full = False)
             .where(and_(*where_clause))
             .distinct()
-        ).cte("soft_delete_subquery")
+        ).alias("soft_delete_subquery")
 
         delete_stmt = (
             delete(target_table)

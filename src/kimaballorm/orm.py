@@ -5,6 +5,7 @@ from sqlalchemy import Integer
 from sqlalchemy import Numeric
 from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
+from .mixin_utility import UtilityBase
 from .mixin_fact_crud import SyncFact
 from .mixin_scd1_crud import SyncSCD1
 from .mixin_scd2_crud import SyncSCD2
@@ -286,54 +287,26 @@ class DimIndirectCashFlowCategorySource(Base, DimIndirectCashFlowCategoryMixin, 
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class DimJournalDescriptionMixin(object):
-    description_key = Column(Integer, primary_key=True, nullable=False)
-    description = Column(String(256), primary_key=False, nullable=True)
-    active = Column(Integer, primary_key=False, nullable=False)
-    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "description"},)
-
-
-class DimJournalDescription(Base, DimJournalDescriptionMixin, SyncSCD1):
+class DimJournalDescription(Base, UtilityBase):
     __tablename__ = "dim_journal_description"
+    description_key = Column(Integer, primary_key=True, nullable=False)
+    description = Column(String(100), primary_key=False, nullable=True)
     __table_args__ = (
         UniqueConstraint("description"),
         {"schema": "finance_dw"},
     )
-
-    @classmethod
-    def get_source_entity(cls):
-        return DimJournalDescriptionSource
+    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "description"},)
 
 
-class DimJournalDescriptionSource(Base, DimJournalDescriptionMixin, SyncSCD1):
-    __tablename__ = "dim_journal_description_source"
-    __table_args__ = ({"schema": "finance_etl"},)
-
-
-class DimJournalEntryMixin(object):
-    journal_entry_id_key = Column(Integer, primary_key=True, nullable=False)
-    journal_entry_id = Column(
-        Numeric(precision=28, scale=0), primary_key=False, nullable=True
-    )
-    active = Column(Integer, primary_key=False, nullable=False)
-    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "journal_entry_id"},)
-
-
-class DimJournalEntry(Base, DimJournalEntryMixin, SyncSCD1):
+class DimJournalEntry(Base, UtilityBase):
     __tablename__ = "dim_journal_entry"
+    journal_entry_id_key = Column(Integer, primary_key=True, nullable=False)
+    journal_entry_id = Column(Numeric(precision=14, scale=0), primary_key=False, nullable=True)
     __table_args__ = (
         UniqueConstraint("journal_entry_id"),
         {"schema": "finance_dw"},
     )
-
-    @classmethod
-    def get_source_entity(cls):
-        return DimJournalEntrySource
-
-
-class DimJournalEntrySource(Base, DimJournalEntryMixin, SyncSCD1):
-    __tablename__ = "dim_journal_entry_source"
-    __table_args__ = ({"schema": "finance_etl"},)
+    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "journal_entry_id"},)
 
 
 class DimProductLineMixin(object):

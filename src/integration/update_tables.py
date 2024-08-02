@@ -6,6 +6,7 @@ from src.integration.generate_statements import (
     generate_call_procedure_statement
 )
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 
 
 def update_target_table(entity_orm, eng):
@@ -15,8 +16,8 @@ def update_target_table(entity_orm, eng):
     sp_populate_source_table_name = f"{schema_name}.sp_populate_source_table_{table_name}"
 
     compiled_statements = generate_crud_statements(entity_orm)
-    truncate_statement = generate_truncate_statement(source_entity)
-    procedure_statement = generate_call_procedure_statement(sp_populate_source_table_name)
+    truncate_statement = text(generate_truncate_statement(source_entity))
+    procedure_statement = text(generate_call_procedure_statement(sp_populate_source_table_name))
 
     session = sessionmaker(bind=eng)
     session = session()

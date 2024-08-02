@@ -5,10 +5,8 @@ AS $$
 DECLARE
 v_truncate_query VARCHAR(MAX) := '';
 v_insert_query VARCHAR(MAX) := '';
-v_year_str TEXT := v_year;
-v_month_str TEXT := v_month;
-v_table_name VARCHAR(30) := 'iseries_mhf' || v_year_str || v_month_str || '_reflines';
-v_source_date_col TEXT := 'last_day(cast('''|| v_year_str ||'-'|| v_month_str ||'-01'' as date))';
+v_table_name VARCHAR(30) := 'iseries_mhf' || v_year || v_month || '_reflines';
+v_source_date_col TEXT := 'last_day(cast('''|| v_year ||'-'|| v_month ||'-01'' as date))';
 
 BEGIN
 

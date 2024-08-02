@@ -1,8 +1,16 @@
-CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_dim_branch(v_year INT, v_month INT)
+CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_dim_branch_from_archive(v_year CHAR(4), v_month CHAR(2))
 LANGUAGE plpgsql
 AS $$
+
+DECLARE
+    v_truncate_query VARCHAR(MAX) := '';
+    v_insert_query VARCHAR(MAX) := '';
+    v_table_name VARCHAR(30) := 'iseries_mhf' || v_year || v_month || '_refstor';
+    v_source_date_col TEXT := 'last_day(cast('''|| v_year ||'-'|| v_month ||'-01'' as date))';
+
 BEGIN
 
+v_insert_query = '
     INSERT INTO finance_etl.dim_branch_source
     (
     branch_key,
@@ -36,21 +44,15 @@ BEGIN
     active
     )
 
-    with period_ending as
-    (
-        select current_month_ending as period_ending
-        from finance_staging.last_date_of_mhf_schema
-    )
-
-    , store_open_dates as
+    with store_open_dates as
     (
     -- there are 2 tables that contain open dates for stores
-    -- it's unclear which is the source of truth
+    -- it''s unclear which is the source of truth
     -- only one table has a defined closing date
     select distinct
         COALESCE(f.rlbran, f2.newbrc) as branch,
         coalesce(f.opendate, f2.opndat) as open_date,
-        case when f.closedate = '9999-12-31' then null else f.closedate end as close_date
+        case when f.closedate = ''9999-12-31'' then null else f.closedate end as close_date
     from finance_staging.iseries_arflib_arfadtv135 f
     full outer join finance_staging.iseries_arflib_arfnstr f2 on
         coalesce(f.rlbran, -1) = coalesce(f2.newbrc, -1)
@@ -60,33 +62,33 @@ BEGIN
     (
     -- there are situations where duplicate branches exist in the same table.
     -- for example, mhg202308_refstor, branch 1 is listed 5 times.
-    -- there's no way to know which row is the correct one, so we select the first row
+    -- there''s no way to know which row is the correct one, so we select the first row
     SELECT
     row_number() over(partition by rlbran order by rlbran) as branch_count,
-    (select period_ending from period_ending) as source ,
+    '|| v_source_date_col ||' as source ,
     f.rlbran as branch,
-    replace(f.rlabbr, '  ', ' ') as branch_abb,
-    case when f.rlbnam = '' then 'None' else replace(f.rlbnam, '  ', ' ') end as branch_name,
+    replace(f.rlabbr, ''  '', '' '') as branch_abb,
+    case when f.rlbnam = '''' then ''None'' else replace(f.rlbnam, ''  '', '' '') end as branch_name,
     case
-        when f.rltyp2 = 'A' and f.rlbryn = 'Y' then 'Branch'
-        when f.rltyp2 = 'B'	then 'Branch'
-        when f.rltyp2 = 'C'	then 'Corporate'
-        when f.rltyp2 = 'I'	then 'Inactive'
-        when f.rltyp2 = 'Y'	then 'Elimination'
-        when f.rltyp2 = 'W'	then 'Distribution Center'
-        when f.rltyp2 = 'S'	then 'Sales'
-        when f.rltyp2 = 'M'	then 'Deposits'
-        when f.rltyp2 = 'U'	then 'Dummy'
-        else 'None'
+        when f.rltyp2 = ''A'' and f.rlbryn = ''Y'' then ''Branch''
+        when f.rltyp2 = ''B''	then ''Branch''
+        when f.rltyp2 = ''C''	then ''Corporate''
+        when f.rltyp2 = ''I''	then ''Inactive''
+        when f.rltyp2 = ''Y''	then ''Elimination''
+        when f.rltyp2 = ''W''	then ''Distribution Center''
+        when f.rltyp2 = ''S''	then ''Sales''
+        when f.rltyp2 = ''M''	then ''Deposits''
+        when f.rltyp2 = ''U''	then ''Dummy''
+        else ''None''
         end as branch_type,
-    case when f.rlbryn = 'Y' then 1 else 0 end as is_branch,
+    case when f.rlbryn = ''Y'' then 1 else 0 end as is_branch,
     f.rlcorp as corporation,
-    case when f.rlmgr = '' then 'None' else replace(f.rlmgr, '  ', ' ') end as manager,
+    case when f.rlmgr = '''' then ''None'' else replace(f.rlmgr, ''  '', '' '') end as manager,
     case when f.rlacct = 0 then -1 else f.rlacct end as customer_account,
     r.rzdesc as region,
     z.rzdesc as "zone",
-    case when f.rlsvwh = '' then 'None' else replace(f.rlsvwh, '  ', ' ') end as servicing_warehouse,
-    case when f.rlsecw = '' then 'None' else replace(f.rlsecw, '  ', ' ') end as alternate_warehouse,
+    case when f.rlsvwh = '''' then ''None'' else replace(f.rlsvwh, ''  '', '' '') end as servicing_warehouse,
+    case when f.rlsecw = '''' then ''None'' else replace(f.rlsecw, ''  '', '' '') end as alternate_warehouse,
     f.rlsvcr as service_charge,
     f.rlidno as bank_id,
     b.runame as bank_name,
@@ -95,10 +97,10 @@ BEGIN
     f.rlcity as city,
     f.rlstat as state,
     f.rlzip  as zipcode,
-    f.rlstrt || ' ' || f.rlcity || ' '|| f.rlstat || ', ' || f.rlzip as address,
-    coalesce(o.open_date, cast('1980-01-01' as date)) as open_date,
-    coalesce(o.close_date, cast('2999-12-31' as date)) as close_date
-    from finance_staging.iseries_rellib_refstor f
+    f.rlstrt || '' '' || f.rlcity || '' ''|| f.rlstat || '', '' || f.rlzip as address,
+    coalesce(o.open_date, cast(''1980-01-01'' as date)) as open_date,
+    coalesce(o.close_date, cast(''2999-12-31'' as date)) as close_date
+    from finance_staging.'|| v_table_name ||'  f
     left join finance_staging.iseries_rellib_refregn  r on r.RZREGN = f.rlregn
     left join finance_staging.iseries_rellib_refzones z on z.rzzone = f.rlzone
     left join finance_staging.iseries_rellib_refbanks b on b.ruid# = f.rlidno
@@ -108,31 +110,31 @@ BEGIN
     select
     -1 as branch_key,
     cast(null as INT) as branch,
-    'None' as branch_abb,
-    'None' as branch_name,
-    'None' as branch_type,
+    ''None'' as branch_abb,
+    ''None'' as branch_name,
+    ''None'' as branch_type,
     0 as is_branch,
     -1 as corporation,
-    'None' as manager,
+    ''None'' as manager,
     -1 as customer_account,
-    'None' as region,
-    'None' as "zone",
-    'None' as servicing_warehouse,
-    'None' as alternate_warehouse,
+    ''None'' as region,
+    ''None'' as "zone",
+    ''None'' as servicing_warehouse,
+    ''None'' as alternate_warehouse,
     0 as service_charge,
     -1 as bank_id,
-    'None' as bank_name,
+    ''None'' as bank_name,
     0 as bank_minimum_balance,
-    'None' as street,
-    'None' as city,
-    'None' as state,
+    ''None'' as street,
+    ''None'' as city,
+    ''None'' as state,
     00000 as zipcode,
-    'None' as address,
-    cast('2999-12-31' as date) as open_date,
-    cast('2999-12-31' as date) as close_date,
-    cast('2999-12-31' as date) as start_of_first_full_month,
-    cast('1900-01-01' as date) as SCD2_start_date,
-    cast('2999-01-01' as date) as SCD2_end_date,
+    ''None'' as address,
+    cast(''2999-12-31'' as date) as open_date,
+    cast(''2999-12-31'' as date) as close_date,
+    cast(''2999-12-31'' as date) as start_of_first_full_month,
+    cast(''1900-01-01'' as date) as SCD2_start_date,
+    cast(''2999-01-01'' as date) as SCD2_end_date,
     0 as current_flag,
     0 as active
 
@@ -166,12 +168,14 @@ BEGIN
     f.close_date,
     DATEADD(day, 1, last_day(f.open_date)) as start_of_first_full_month,
     source as SCD2_start_date,
-    cast('2999-12-31' as date) as SCD2_end_date,
+    cast(''2999-12-31'' as date) as SCD2_end_date,
     1 as current_flag,
     1 as active
     from base f
-    where f.branch_count = 1
+    where f.branch_count = 1'
     ;
 
+RAISE INFO '%', v_insert_query;
+EXECUTE v_insert_query;
 END;
 $$
