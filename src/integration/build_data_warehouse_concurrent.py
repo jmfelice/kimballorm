@@ -96,33 +96,6 @@ if __name__ == '__main__':
     # ]
     #
     # process_concurrently(degenerate_dimensions, engine, process_souce = False)
-    #
-    # end_time = time.time()
-    # print("Total time: ", end_time - start_time)
-
-    # bridges = [
-    #     BridgeCategory,
-    #     BridgeIndirectCashFlowCategory,
-    #     BridgeMapCashFlow
-    # ]
-    #
-    # process_concurrently(bridges, engine, process_souce = True)
-
-    # facts = [
-    #     FactGeneralLedger,
-    #     FactAcquisitionCashFlow,
-    #     FactIncomeSummary,
-    #     FactBalanceSheet,
-    #     FactCashFlow
-    # ]
-    #
-    # Session = sessionmaker(bind=engine)
-    # session = Session()
-    #
-    # with session as sesh:
-    #     for table in facts:
-    #         process_table(table, sesh, True)
-
 
     # SCD2_dimensions = [
     #     DimBranch,
@@ -146,9 +119,49 @@ if __name__ == '__main__':
     #         session = Session()
     #         with session as sesh:
     #             process_table(dimension, sesh, process_source = True, **params)
+    #
+    # bridges = [
+    #     BridgeCategory,
+    #     BridgeIndirectCashFlowCategory,
+    #     BridgeMapCashFlow
+    # ]
+    #
+    # process_concurrently(bridges, engine, process_souce = True)
 
+    #################
+    # FACTS
+    #################
+    facts = [
+        FactGeneralLedger,
+        # FactAcquisitionCashFlow,
+        # FactIncomeSummary,
+        # FactBalanceSheet,
+        # FactCashFlow
+    ]
+    process_concurrently(facts, engine, process_souce = True)
 
+    #################
+    # Snapshots
+    #################
+    # snapshots = [
+    #     FactBalanceSheet
+    # ]
+
+    # Session = sessionmaker(bind=engine)
+    # session = Session()
+    #
+    # with session as sesh:
+    #     for table in snapshots:
+    #         process_table(table, sesh, True)
 
     end_time = time.time()
     print("Total time: ", end_time - start_time)
 
+# from src.integration.generate_statements import generate_create_table_statement
+# engine = connect_to_redshift()
+# create_statement = generate_create_table_statement(FactGeneralLedger)
+# session = sessionmaker(bind = engine)
+# session = session()
+# with session as sesh:
+#     sesh.execute(create_statement)
+#     sesh.commit()
