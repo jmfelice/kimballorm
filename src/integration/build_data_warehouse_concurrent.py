@@ -58,6 +58,11 @@ def process_concurrently(table_orms, eng, process_souce = True, **kwargs):
 
 
 def get_dates_for_archived_schemas(table_orm, eng):
+    table_ref = {
+        "dim_branch": "refstor",
+        "dim_product_line": "reflines"
+    }
+
     table_name = table_orm().get_table_name()
     iseries_table_name = table_ref[table_name]
 
@@ -102,11 +107,6 @@ if __name__ == '__main__':
     #     DimProductLine
     # ]
     #
-    # table_ref = {
-    #     "dim_branch": "refstor",
-    #     "dim_product_line": "reflines"
-    # }
-    #
     # for dimension in SCD2_dimensions:
     #     year, month = get_dates_for_archived_schemas(dimension, engine)
     #     year = year
@@ -132,13 +132,13 @@ if __name__ == '__main__':
     # FACTS
     #################
     facts = [
-        FactGeneralLedger,
-        # FactAcquisitionCashFlow,
+        # FactGeneralLedger,
+        FactAcquisitionCashFlow,
         # FactIncomeSummary,
         # FactBalanceSheet,
         # FactCashFlow
     ]
-    process_concurrently(facts, engine, process_souce = True)
+    process_concurrently(facts, engine, process_souce = False)
 
     #################
     # Snapshots
@@ -154,14 +154,3 @@ if __name__ == '__main__':
     #     for table in snapshots:
     #         process_table(table, sesh, True)
 
-    end_time = time.time()
-    print("Total time: ", end_time - start_time)
-
-# from src.integration.generate_statements import generate_create_table_statement
-# engine = connect_to_redshift()
-# create_statement = generate_create_table_statement(FactGeneralLedger)
-# session = sessionmaker(bind = engine)
-# session = session()
-# with session as sesh:
-#     sesh.execute(create_statement)
-#     sesh.commit()

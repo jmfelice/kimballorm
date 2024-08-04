@@ -16,11 +16,11 @@ def publish_stored_procedure(eng, directory = "../sql/stored_procedures_update_t
     session = Session()
     files = list_files_with_extension(directory, "sql")
 
-    with session as sesh:
-        for file_name in files:
-            print(f"Publishing Stored Procedure from file: {file_name}")
-            full_path = os.path.join(directory, file_name)
-            stored_procedure = read_file(full_path)
+    for file_name in files:
+        print(f"Publishing Stored Procedure from file: {file_name}")
+        full_path = os.path.join(directory, file_name)
+        stored_procedure = read_file(full_path)
+        with session as sesh:
             sesh.execute(stored_procedure)
             sesh.commit()
 

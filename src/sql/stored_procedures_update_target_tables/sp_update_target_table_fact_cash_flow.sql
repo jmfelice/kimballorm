@@ -154,12 +154,12 @@ SELECT
     source.cash_flow
 FROM cash_flow AS source
 LEFT OUTER JOIN finance_dw.fact_cash_flow AS target ON
-    source.gl_account_id_key               = target.gl_account_id_key              ,
-    source.branch_key                      = target.branch_key                     ,
-    source.corporation_key                 = target.corporation_key                ,
-    source.category_key                    = target.category_key                   ,
-    source.indirect_cash_flow_category_key = target.indirect_cash_flow_category_key,
-    source.posting_date_key                = target.posting_date_key
+    source.gl_account_id_key               = target.gl_account_id_key
+    AND source.branch_key                      = target.branch_key
+    AND source.corporation_key                 = target.corporation_key
+    AND source.category_key                    = target.category_key
+    AND source.indirect_cash_flow_category_key = target.indirect_cash_flow_category_key
+    AND source.posting_date_key                = target.posting_date_key
 WHERE target.fact_cash_flow_key IS NULL
 ;
 END;

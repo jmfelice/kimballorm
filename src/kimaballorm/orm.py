@@ -4,6 +4,7 @@ from sqlalchemy import Date
 from sqlalchemy import Integer
 from sqlalchemy import Numeric
 from sqlalchemy import String
+from sqlalchemy import BIGINT
 from sqlalchemy.ext.declarative import declarative_base
 from .mixin_utility import UtilityBase
 from .mixin_fact_crud import SyncFact
@@ -467,6 +468,8 @@ class FactAcquisitionCashFlowMixin(object):
     fact_acquisition_cash_flow_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
+    foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    measures_hash = Column(BIGINT, primary_key=False, nullable=False)
     posting_date_key = Column(Integer, primary_key=False, nullable=False)
     corporation_key = Column(Integer, primary_key=False, nullable=False)
     indirect_cash_flow_category_key = Column(Integer, primary_key=False, nullable=False)
@@ -504,6 +507,7 @@ class FactAcquisitionCashFlow(Base, FactAcquisitionCashFlowMixin, SyncFact):
 
 class FactAcquisitionCashFlowSource(Base, FactAcquisitionCashFlowMixin, SyncFact):
     __tablename__ = "fact_acquisition_cash_flow_source"
+    action = Column(String(6), primary_key=False, nullable=False)
     __table_args__ = ({"schema": "finance_etl"},)
 
 
@@ -511,6 +515,8 @@ class FactBalanceSheetMixin(object):
     fact_balance_sheet_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
+    foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    measures_hash = Column(BIGINT, primary_key=False, nullable=False)
     branch_key = Column(Integer, primary_key=False, nullable=False)
     gl_account_id_key = Column(Integer, primary_key=False, nullable=False)
     category_key = Column(Integer, primary_key=False, nullable=False)
@@ -559,6 +565,7 @@ class FactBalanceSheet(Base, FactBalanceSheetMixin, SyncFact):
 
 class FactBalanceSheetSource(Base, FactBalanceSheetMixin, SyncFact):
     __tablename__ = "fact_balance_sheet_source"
+    action = Column(String(6), primary_key=False, nullable=False)
     __table_args__ = ({"schema": "finance_etl"},)
 
 
@@ -566,6 +573,8 @@ class FactCashFlowMixin(object):
     fact_cash_flow_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
+    foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    measures_hash = Column(BIGINT, primary_key=False, nullable=False)
     gl_account_id_key = Column(Integer, primary_key=False, nullable=False)
     branch_key = Column(Integer, primary_key=False, nullable=False)
     corporation_key = Column(Integer, primary_key=False, nullable=False)
@@ -624,6 +633,7 @@ class FactCashFlow(Base, FactCashFlowMixin, SyncFact):
 
 class FactCashFlowSource(Base, FactCashFlowMixin, SyncFact):
     __tablename__ = "fact_cash_flow_source"
+    action = Column(String(6), primary_key=False, nullable=False)
     __table_args__ = ({"schema": "finance_etl"},)
 
 
@@ -631,6 +641,8 @@ class FactGeneralLedgerMixin(object):
     fact_general_ledger_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
+    foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    measures_hash = Column(BIGINT, primary_key=False, nullable=False)
     gl_account_id_key = Column(Integer, primary_key=False, nullable=False)
     branch_key = Column(Integer, primary_key=False, nullable=False)
     corporation_key = Column(Integer, primary_key=False, nullable=False)
@@ -690,6 +702,7 @@ class FactGeneralLedger(Base, FactGeneralLedgerMixin, SyncFact):
 
 class FactGeneralLedgerSource(Base, FactGeneralLedgerMixin, SyncFact):
     __tablename__ = "fact_general_ledger_source"
+    action = Column(String(6), primary_key=False, nullable=False)
     __table_args__ = ({"schema": "finance_etl"},)
 
 
@@ -697,6 +710,8 @@ class FactIncomeSummaryMixin(object):
     fact_income_summary_key = Column(
         Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
     )
+    foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    measures_hash = Column(BIGINT, primary_key=False, nullable=False)
     branch_key = Column(Integer, primary_key=False, nullable=False)
     gl_account_id_key = Column(Integer, primary_key=False, nullable=False)
     corporation_key = Column(Integer, primary_key=False, nullable=False)
@@ -737,6 +752,7 @@ class FactIncomeSummary(Base, FactIncomeSummaryMixin, SyncFact):
 
 class FactIncomeSummarySource(Base, FactIncomeSummaryMixin, SyncFact):
     __tablename__ = "fact_income_summary_source"
+    action = Column(String(6), primary_key=False, nullable=False)
     __table_args__ = ({"schema": "finance_etl"},)
 
 
