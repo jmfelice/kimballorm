@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_dim_indirect_cash_flow_category()
+CREATE OR REPLACE PROCEDURE finance_etl.sp_update_source_table_dim_indirect_cash_flow_category()
 AS $$
 BEGIN
 

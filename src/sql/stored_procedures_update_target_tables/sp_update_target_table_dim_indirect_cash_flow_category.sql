@@ -1,10 +1,9 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_dim_indirect_cash_flow_category()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_dim_indirect_cash_flow_category();
+CALL finance_etl.sp_update_source_table_dim_indirect_cash_flow_category();
 
 UPDATE finance_dw.dim_indirect_cash_flow_category SET
     parent_indirect_cash_flow_category = update_old_rows.parent_indirect_cash_flow_category,
@@ -33,7 +32,7 @@ FROM (
         OR coalesce(target.active, 0) != coalesce(source.active, 0)
 ) AS update_old_rows
 WHERE finance_dw.dim_indirect_cash_flow_category.indirect_cash_flow_category_key = update_old_rows.indirect_cash_flow_category_key
-; 
+;
 
 
 INSERT INTO finance_dw.dim_indirect_cash_flow_category (
@@ -52,7 +51,7 @@ LEFT OUTER JOIN
     finance_dw.dim_indirect_cash_flow_category AS target
     ON (source.indirect_cash_flow_category = target.indirect_cash_flow_category OR (source.indirect_cash_flow_category IS NULL AND target.indirect_cash_flow_category IS NULL))
 WHERE target.indirect_cash_flow_category_key IS NULL
-; 
+;
 
 
 WITH soft_delete_cte AS (

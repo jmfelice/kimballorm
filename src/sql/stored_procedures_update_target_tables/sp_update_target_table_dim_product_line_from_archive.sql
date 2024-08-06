@@ -3,7 +3,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_dim_product_line_from_archive(v_year, v_month);
+CALL finance_etl.sp_update_source_table_dim_product_line_from_archive(v_year, v_month);
 
 INSERT INTO finance_dw.dim_product_line (product_line_key, product_line, product_line_description, unit_of_measure, scd2_start_date, scd2_end_date, current_flag, active)
 SELECT

@@ -1,10 +1,9 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_dim_category()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_dim_category();
+CALL finance_etl.sp_update_source_table_dim_category();
 
 UPDATE finance_dw.dim_category SET
     parent_category = update_old_rows.parent_category,
@@ -34,7 +33,7 @@ FROM (
         OR coalesce(target.active, 0) != coalesce(source.active, 0)
 ) AS update_old_rows
 WHERE finance_dw.dim_category.category_key = update_old_rows.category_key
-; 
+;
 
 
 INSERT INTO finance_dw.dim_category (category_key, category, parent_category, category_class, category_order, isleaf, level, active)
@@ -50,7 +49,7 @@ SELECT
 FROM finance_etl.dim_category_source AS source
 LEFT OUTER JOIN finance_dw.dim_category AS target ON (source.category = target.category OR (source.category IS NULL AND target.category IS NULL))
 WHERE target.category_key IS NULL
-; 
+;
 
 
 WITH soft_delete_cte AS (

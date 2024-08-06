@@ -1,10 +1,9 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_dim_product_line()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_dim_product_line();
+CALL finance_etl.sp_update_source_table_dim_product_line();
 
 INSERT INTO finance_dw.dim_product_line (product_line_key, product_line, product_line_description, unit_of_measure, scd2_start_date, scd2_end_date, current_flag, active)
 SELECT
@@ -25,7 +24,7 @@ WHERE
         OR coalesce(target.unit_of_measure, '') != coalesce(source.unit_of_measure, '')
         OR coalesce(target.active, 0) != coalesce(source.active, 0)
     )
-; 
+;
 
 
 UPDATE finance_dw.dim_product_line SET
@@ -53,7 +52,7 @@ FROM (
         )
 ) AS update_old_rows
 WHERE finance_dw.dim_product_line.product_line_key = update_old_rows.product_line_key
-; 
+;
 
 
 INSERT INTO finance_dw.dim_product_line (product_line_key, product_line, product_line_description, unit_of_measure, scd2_start_date, scd2_end_date, current_flag, active)
@@ -69,7 +68,7 @@ SELECT
 FROM finance_etl.dim_product_line_source AS source
 LEFT OUTER JOIN finance_dw.dim_product_line AS target ON (source.product_line = target.product_line OR (source.product_line IS NULL AND target.product_line IS NULL))
 WHERE target.product_line_key IS NULL
-; 
+;
 
 
 WITH soft_delete_cte AS (

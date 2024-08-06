@@ -1,4 +1,4 @@
-create or replace procedure finance_etl.sp_populate_source_table_dim_product_line()
+create or replace procedure finance_etl.sp_update_source_table_dim_product_line()
 as $$
 begin
 

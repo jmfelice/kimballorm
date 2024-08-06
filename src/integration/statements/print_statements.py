@@ -1,11 +1,11 @@
-from src.integration.generate_statements import (
+from src.integration.statements.generate_statements import (
     generate_create_table_statement,
     generate_crud_statements,
     generate_drop_statement
 )
 import sqlfluff
 
-config_path = r"C:\Users\jmfel\PycharmProjects\KimballORM\.sqlfluff"
+config_path = r"/.sqlfluff"
 
 
 def print_crud_statements(entity_orm, eng):

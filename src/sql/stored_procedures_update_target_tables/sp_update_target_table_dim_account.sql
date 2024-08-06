@@ -1,10 +1,9 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_dim_account()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_dim_account();
+CALL finance_etl.sp_update_source_table_dim_account();
 
 UPDATE finance_dw.dim_account SET
     gl_account_description = update_old_rows.gl_account_description,
@@ -31,7 +30,7 @@ FROM (
         OR coalesce(target.active, 0) != coalesce(source.active, 0)
 ) AS update_old_rows
 WHERE finance_dw.dim_account.gl_account_id_key = update_old_rows.gl_account_id_key
-; 
+;
 
 
 INSERT INTO finance_dw.dim_account (gl_account_id_key, gl_account_id, gl_account_description, account_class, gl_category, intercompany_flag, active)
@@ -46,7 +45,7 @@ SELECT
 FROM finance_etl.dim_account_source AS source
 LEFT OUTER JOIN finance_dw.dim_account AS target ON (source.gl_account_id = target.gl_account_id OR (source.gl_account_id IS NULL AND target.gl_account_id IS NULL))
 WHERE target.gl_account_id_key IS NULL
-; 
+;
 
 
 WITH soft_delete_cte AS (

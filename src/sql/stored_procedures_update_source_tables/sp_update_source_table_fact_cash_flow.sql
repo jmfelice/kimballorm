@@ -17,6 +17,7 @@ insert into finance_etl.fact_cash_flow_source
     posting_date_key,
     general_ledger,
     acquisition,
+    cash_flow,
     action
 )
 
@@ -65,8 +66,8 @@ with base as
         CAST(coalesce(posting_date_key               , -1) AS VARCHAR)
     ) AS foreign_key_hash,
     FNV_HASH(
-        coalesce(general_ledger, 0) AS VARCHAR) ||
-        coalesce(acquisition   , 0)
+        CAST(coalesce(general_ledger, 0) AS VARCHAR) ||
+        CAST(coalesce(acquisition   , 0) AS VARCHAR)
     ) AS measures_hash,
     gl_account_id_key              ,
     branch_key                     ,
@@ -77,7 +78,7 @@ with base as
     coalesce(general_ledger, 0) as general_ledger,
     coalesce(acquisition   , 0) as acquisition,
     coalesce(general_ledger, 0) + coalesce(acquisition, 0) as cash_flow
-    from combined
+    from base
     PIVOT(SUM(amount) for type in ('general_ledger', 'acquisition'))
 )
 
@@ -114,8 +115,8 @@ SELECT
     target.acquisition                    ,
     target.cash_flow                      ,
     'DELETE' as action
-FROM cash_flow AS source
-LEFT OUTER JOIN finance_dw.fact_cash_flow AS target ON
+FROM finance_dw.fact_cash_flow AS target
+LEFT OUTER JOIN cash_flow AS source ON
     source.foreign_key_hash = target.foreign_key_hash
 WHERE source.foreign_key_hash is null
 

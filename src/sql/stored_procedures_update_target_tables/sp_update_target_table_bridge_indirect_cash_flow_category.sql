@@ -1,10 +1,9 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_bridge_indirect_cash_flow_category()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_bridge_indirect_cash_flow_category();
+CALL finance_etl.sp_update_source_table_bridge_indirect_cash_flow_category();
 
 INSERT INTO finance_dw.bridge_indirect_cash_flow_category (
     indirect_cash_flow_category_key,
@@ -36,7 +35,7 @@ LEFT OUTER JOIN
             OR (source.child_indirect_cash_flow_category_key IS NULL AND target.child_indirect_cash_flow_category_key IS NULL)
         )
 WHERE target.bridge_indirect_cash_flow_category_key IS NULL
-; 
+;
 
 
 UPDATE finance_dw.bridge_indirect_cash_flow_category SET
@@ -75,11 +74,11 @@ FROM (
         OR coalesce(finance_dw.bridge_indirect_cash_flow_category.isleaf, 0) != coalesce(source.isleaf, 0)
 ) AS update_old_rows
 WHERE finance_dw.bridge_indirect_cash_flow_category.bridge_indirect_cash_flow_category_key = update_old_rows.bridge_indirect_cash_flow_category_key
-; 
+;
 
 
-DELETE FROM finance_dw.bridge_indirect_cash_flow_category USING (SELECT DISTINCT target.bridge_indirect_cash_flow_category_key AS bridge_indirect_cash_flow_category_key 
-FROM finance_dw.bridge_indirect_cash_flow_category AS target LEFT OUTER JOIN finance_etl.bridge_indirect_cash_flow_category_source AS source ON (source.indirect_cash_flow_category_key = target.indirect_cash_flow_category_key OR (source.indirect_cash_flow_category_key IS NULL AND target.indirect_cash_flow_category_key IS NULL)) AND (source.child_indirect_cash_flow_category_key = target.child_indirect_cash_flow_category_key OR (source.child_indirect_cash_flow_category_key IS NULL AND target.child_indirect_cash_flow_category_key IS NULL)) 
+DELETE FROM finance_dw.bridge_indirect_cash_flow_category USING (SELECT DISTINCT target.bridge_indirect_cash_flow_category_key AS bridge_indirect_cash_flow_category_key
+FROM finance_dw.bridge_indirect_cash_flow_category AS target LEFT OUTER JOIN finance_etl.bridge_indirect_cash_flow_category_source AS source ON (source.indirect_cash_flow_category_key = target.indirect_cash_flow_category_key OR (source.indirect_cash_flow_category_key IS NULL AND target.indirect_cash_flow_category_key IS NULL)) AND (source.child_indirect_cash_flow_category_key = target.child_indirect_cash_flow_category_key OR (source.child_indirect_cash_flow_category_key IS NULL AND target.child_indirect_cash_flow_category_key IS NULL))
 WHERE source.bridge_indirect_cash_flow_category_key IS NULL) AS soft_delete_subquery WHERE finance_dw.bridge_indirect_cash_flow_category.bridge_indirect_cash_flow_category_key = soft_delete_subquery.bridge_indirect_cash_flow_category_key
 ;
 END;

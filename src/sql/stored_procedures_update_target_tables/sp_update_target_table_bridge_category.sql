@@ -1,10 +1,9 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_bridge_category()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_bridge_category();
+CALL finance_etl.sp_update_source_table_bridge_category();
 
 INSERT INTO finance_dw.bridge_category (category_key, child_category_key, category, child_category, category_order, category_class, level, isleaf)
 SELECT

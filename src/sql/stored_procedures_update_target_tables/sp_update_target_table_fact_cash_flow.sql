@@ -18,7 +18,7 @@ SET
     corporation_key                 = source.corporation_key,
     category_key                    = source.category_key,
     indirect_cash_flow_category_key = source.indirect_cash_flow_category_key,
-    posting_date_key                = posting_date_key.measures_hash,
+    posting_date_key                = source.posting_date_key,
     general_ledger                  = source.general_ledger,
     acquisition                     = source.acquisition,
     cash_flow                       = source.cash_flow

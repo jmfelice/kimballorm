@@ -185,9 +185,9 @@ class UtilityBase:
         return aliased(cls, name = alias_name)
 
     @classmethod
-    def get_sp_populate_source_table(cls):
+    def get_sp_update_source_table(cls):
         table_name = cls.get_table_name()
-        return f"finance_etl.sp_populate_source_table_{table_name}"
+        return f"finance_etl.sp_update_source_table_{table_name}"
 
     @classmethod
     def get_source_table_name(cls):

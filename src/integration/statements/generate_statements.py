@@ -49,8 +49,8 @@ def generate_target_table_update_stored_procedure(target_entity, eng, config_pat
     schema_name = source_entity().get_schema_name()
     table_name = target_entity().get_table_name()
 
-    sp_populate_source_table_name = f"{schema_name}.sp_populate_source_table_{table_name}"
-    populate_source_table = generate_call_procedure_statement(sp_populate_source_table_name)
+    sp_update_source_table_name = f"{schema_name}.sp_update_source_table_{table_name}"
+    update_source_table = generate_call_procedure_statement(sp_update_source_table_name)
     crud_statements = generate_crud_statements(target_entity)
     crud_statements = target_entity().compile_sql(crud_statements, eng)
     crud_statements = [sqlfluff.fix(x, config_path = config_path) for x in crud_statements]
@@ -69,7 +69,7 @@ $$
 """
 
     proc = (header + "\n" +
-        populate_source_table + "\n\n" +
+        update_source_table + "\n\n" +
         '; \n\n\n'.join(crud_statements) +
         footer
         )

@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_dim_product_line_from_archive(v_year CHAR(4), v_month CHAR(2))
+CREATE OR REPLACE PROCEDURE finance_etl.sp_update_source_table_dim_product_line_from_archive(v_year CHAR(4), v_month CHAR(2))
 LANGUAGE plpgsql
 AS $$
 

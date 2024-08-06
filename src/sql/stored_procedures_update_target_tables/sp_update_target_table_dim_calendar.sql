@@ -1,10 +1,9 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_dim_calendar()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_dim_calendar();
+CALL finance_etl.sp_update_source_table_dim_calendar();
 
 UPDATE finance_dw.dim_calendar SET
     year = update_old_rows.year,
@@ -136,7 +135,7 @@ FROM (
         OR coalesce(target.active, 0) != coalesce(source.active, 0)
 ) AS update_old_rows
 WHERE finance_dw.dim_calendar.date_key = update_old_rows.date_key
-; 
+;
 
 
 INSERT INTO finance_dw.dim_calendar (
@@ -229,7 +228,7 @@ SELECT
 FROM finance_etl.dim_calendar_source AS source
 LEFT OUTER JOIN finance_dw.dim_calendar AS target ON (source.calendar_date = target.calendar_date OR (source.calendar_date IS NULL AND target.calendar_date IS NULL))
 WHERE target.date_key IS NULL
-; 
+;
 
 
 WITH soft_delete_cte AS (

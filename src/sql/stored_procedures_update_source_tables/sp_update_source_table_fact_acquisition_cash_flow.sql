@@ -66,8 +66,8 @@ SELECT
     target.indirect_cash_flow_category_key,
     target.cash_flow,
     'DELETE' as action
-FROM base AS source
-LEFT OUTER JOIN finance_dw.fact_acquisition_cash_flow AS target ON
+FROM finance_dw.fact_acquisition_cash_flow AS target
+LEFT OUTER JOIN base AS source ON
     source.foreign_key_hash = target.foreign_key_hash
 WHERE source.foreign_key_hash is null
 

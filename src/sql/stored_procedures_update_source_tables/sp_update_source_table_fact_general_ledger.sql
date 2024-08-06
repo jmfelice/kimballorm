@@ -111,8 +111,8 @@ SELECT
     target.credit_amount,
     target.amount,
     'DELETE' as action
-FROM base AS source
-LEFT OUTER JOIN finance_dw.fact_general_ledger AS target ON
+FROM finance_dw.fact_general_ledger AS target
+LEFT OUTER JOIN base AS source ON
     source.foreign_key_hash = target.foreign_key_hash
 WHERE
     target.posting_date_key between

@@ -3,7 +3,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_dim_branch_from_archive(v_year, v_month);
+CALL finance_etl.sp_update_source_table_dim_branch_from_archive(v_year, v_month);
 
 INSERT INTO finance_dw.dim_branch (
     branch_key,

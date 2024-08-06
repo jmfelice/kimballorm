@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_fact_acquisition_cash_flow()
 LANGUAGE plpgsql
 AS $$

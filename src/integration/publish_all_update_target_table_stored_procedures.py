@@ -1,4 +1,4 @@
-from src.util.connect import connect_to_redshift
+from src.util.connect_to_redshift import connect_to_redshift
 from sqlalchemy.orm import sessionmaker
 from src.util.read_file import read_file
 import os
@@ -28,4 +28,3 @@ def publish_stored_procedure(eng, directory = "../sql/stored_procedures_update_t
 if __name__ == '__main__':
     engine = connect_to_redshift()
     publish_stored_procedure(engine)
-

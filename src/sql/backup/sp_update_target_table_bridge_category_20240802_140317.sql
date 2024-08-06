@@ -4,7 +4,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_bridge_category();
+CALL finance_etl.sp_update_source_table_bridge_category();
 
 INSERT INTO finance_dw.bridge_category (category_key, child_category_key, category, child_category, category_order, category_class, level, isleaf)
 SELECT
@@ -23,7 +23,7 @@ LEFT OUTER JOIN
         (source.category_key = target.category_key OR (source.category_key IS NULL AND target.category_key IS NULL))
         AND (source.child_category_key = target.child_category_key OR (source.child_category_key IS NULL AND target.child_category_key IS NULL))
 WHERE target.bridge_category_key IS NULL
-; 
+;
 
 
 UPDATE finance_dw.bridge_category SET
@@ -59,11 +59,11 @@ FROM (
         OR coalesce(finance_dw.bridge_category.isleaf, 0) != coalesce(source.isleaf, 0)
 ) AS update_old_rows
 WHERE finance_dw.bridge_category.bridge_category_key = update_old_rows.bridge_category_key
-; 
+;
 
 
-DELETE FROM finance_dw.bridge_category USING SELECT DISTINCT target.bridge_category_key AS bridge_category_key 
-FROM finance_dw.bridge_category AS target LEFT OUTER JOIN finance_etl.bridge_category_source AS source ON (source.category_key = target.category_key OR (source.category_key IS NULL AND target.category_key IS NULL)) AND (source.child_category_key = target.child_category_key OR (source.child_category_key IS NULL AND target.child_category_key IS NULL)) 
+DELETE FROM finance_dw.bridge_category USING SELECT DISTINCT target.bridge_category_key AS bridge_category_key
+FROM finance_dw.bridge_category AS target LEFT OUTER JOIN finance_etl.bridge_category_source AS source ON (source.category_key = target.category_key OR (source.category_key IS NULL AND target.category_key IS NULL)) AND (source.child_category_key = target.child_category_key OR (source.child_category_key IS NULL AND target.child_category_key IS NULL))
 WHERE source.bridge_category_key IS NULL WHERE finance_dw.bridge_category.bridge_category_key = soft_delete_subquery.bridge_category_key
 ;
 END;

@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE finance_etl.sp_populate_source_table_fact_balance_sheet_beginning_balance()
+CREATE OR REPLACE PROCEDURE finance_etl.sp_update_source_table_fact_balance_sheet_beginning_balance()
 LANGUAGE plpgsql
 AS $$
 
@@ -11,13 +11,14 @@ AS $$
     drop table if exists ##beginning_balance;
     create table ##beginning_balance
     (
-        branch INT,
-        gl_account_id VARCHAR(10),
-        corporation INT,
-        posting_date DATE,
-        beginning_debit_balance DECIMAL(20, 8),
+        gl_account_id_key        INT,
+        branch_key               INT,
+        corporation_key          INT,
+        category_key             INT,
+        posting_date_key         INT,
+        beginning_debit_balance  DECIMAL(20, 8),
         beginning_credit_balance DECIMAL(20, 8),
-        beginning_balance DECIMAL(20, 8)
+        beginning_balance        DECIMAL(20, 8)
     );
 
     WITH first_balance_sheet_date AS
@@ -48,26 +49,40 @@ AS $$
         '
         insert into ##beginning_balance
         (
-            branch,
-            gl_account_id,
-            corporation,
-            posting_date,
-            beginning_debit_balance,
+            gl_account_id_key       ,
+            branch_key              ,
+            corporation_key         ,
+            category_key            ,
+            posting_date_key        ,
+            beginning_debit_balance ,
             beginning_credit_balance,
             beginning_balance
         )
 
         select
-        rbbr AS branch,
-        rbglcd AS gl_account_id,
-        rbcorp AS corporation,
-        cast(''' || beginning_yr || '-12-31'' as date) as posting_date,
-        sum(rbdr) AS beginning_debit_balance,
-        sum(rbcr) AS beginning_credit_balance,
+        coalesce(a.gl_account_id_key    , -1) as gl_account_id_key,
+        coalesce(b.branch_key           , -1) as branch_key,
+        coalesce(cp.corporation_key     , -1) as corporation_key,
+        coalesce(ct.category_key        , -1) as category_key,
+        coalesce(c.date_key             , -1) as posting_date_key,
+        sum(rbdr)        AS beginning_debit_balance,
+        sum(rbcr)        AS beginning_credit_balance,
         sum(rbdr - rbcr) as beginning_balance
         FROM finance_staging.iseries_gl'|| right(beginning_yr + 1, 2)|| 'lib_arlballt f
+        left join finance_dw.dim_account     a  on a.gl_account_id  = f.rbglcd
+        left join finance_dw.dim_corporation cp on cp.corporation   = f.rbcorp
+        left join finance_dw.dim_category    ct on ct.category      = a.gl_category
+        left join finance_dw.dim_calendar    c  on c.calendar_date  = cast(''' || beginning_yr || '-12-31'' as date)
+        left join finance_dw.dim_branch      b  on
+            b.branch = f.rbbr and
+            c.calendar_date between b.SCD2_start_date and b.SCD2_end_date
         where rbmont = 12
-        group by rbglcd, rbbr, rbcorp
+        group by
+            a.gl_account_id_key,
+            b.branch_key       ,
+            cp.corporation_key ,
+            ct.category_key    ,
+            c.date_key
         ';
 
     EXECUTE query;

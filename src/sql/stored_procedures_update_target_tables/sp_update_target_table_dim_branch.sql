@@ -1,10 +1,9 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_dim_branch()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_dim_branch();
+CALL finance_etl.sp_update_source_table_dim_branch();
 
 INSERT INTO finance_dw.dim_branch (
     branch_key,
@@ -96,7 +95,7 @@ WHERE
         OR coalesce(target.start_of_first_full_month, '1900-01-01') != coalesce(source.start_of_first_full_month, '1900-01-01')
         OR coalesce(target.active, 0) != coalesce(source.active, 0)
     )
-; 
+;
 
 
 UPDATE finance_dw.dim_branch SET
@@ -165,7 +164,7 @@ FROM (
         )
 ) AS update_old_rows
 WHERE finance_dw.dim_branch.branch_key = update_old_rows.branch_key
-; 
+;
 
 
 INSERT INTO finance_dw.dim_branch (
@@ -231,7 +230,7 @@ SELECT
     source.active
 FROM finance_etl.dim_branch_source AS source LEFT OUTER JOIN finance_dw.dim_branch AS target ON (source.branch = target.branch OR (source.branch IS NULL AND target.branch IS NULL))
 WHERE target.branch_key IS NULL
-; 
+;
 
 
 WITH soft_delete_cte AS (

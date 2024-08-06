@@ -1,10 +1,9 @@
-
 CREATE OR REPLACE PROCEDURE finance_etl.sp_update_target_table_dim_corporation()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-CALL finance_etl.sp_populate_source_table_dim_corporation();
+CALL finance_etl.sp_update_source_table_dim_corporation();
 
 UPDATE finance_dw.dim_corporation SET
     corporation_name = update_old_rows.corporation_name,
@@ -31,7 +30,7 @@ FROM (
         OR coalesce(target.active, 0) != coalesce(source.active, 0)
 ) AS update_old_rows
 WHERE finance_dw.dim_corporation.corporation_key = update_old_rows.corporation_key
-; 
+;
 
 
 INSERT INTO finance_dw.dim_corporation (corporation_key, corporation, corporation_name, corporation_abbr, elimination_branch, federal_id_number, active)
@@ -46,7 +45,7 @@ SELECT
 FROM finance_etl.dim_corporation_source AS source
 LEFT OUTER JOIN finance_dw.dim_corporation AS target ON (source.corporation = target.corporation OR (source.corporation IS NULL AND target.corporation IS NULL))
 WHERE target.corporation_key IS NULL
-; 
+;
 
 
 WITH soft_delete_cte AS (

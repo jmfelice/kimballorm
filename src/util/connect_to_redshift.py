@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 import os
 from sqlalchemy import create_engine
 
-
 def connect_to_redshift():
     # Load environment variables from a .env file
     load_dotenv()
@@ -16,5 +15,3 @@ def connect_to_redshift():
 
     connection_string = f"redshift+psycopg2://{user}:{password}@{host}:{port}/{dbname}"
     return create_engine(connection_string)
-
-

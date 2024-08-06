@@ -1,4 +1,4 @@
-create or replace procedure finance_etl.sp_populate_source_table_dim_calendar()
+create or replace procedure finance_etl.sp_update_source_table_dim_calendar()
 as $$
 begin
     insert into finance_etl.dim_calendar_source
