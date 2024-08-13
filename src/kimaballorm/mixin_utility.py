@@ -190,9 +190,17 @@ class UtilityBase:
         return f"finance_etl.sp_update_source_table_{table_name}"
 
     @classmethod
+    def get_source_entity(cls):
+        return None
+
+    @classmethod
     def get_source_table_name(cls):
-        table_name = cls.get_table_name()
-        return f"finance_etl.{table_name}_source"
+        source_entity = cls.get_source_entity()
+        if source_entity is None:
+            return ''
+        source_schema_name = source_entity().get_schema_name()
+        source_table_name = source_entity().get_table_name()
+        return f"{source_schema_name}.{source_table_name}"
 
     @classmethod
     def join_on_nulls(cls, source_column, target_column):
@@ -216,3 +224,5 @@ class UtilityBase:
                 )
             compiled_statements.append(str(compiled_stmt))
         return compiled_statements
+
+
