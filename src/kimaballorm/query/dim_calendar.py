@@ -1,6 +1,6 @@
+from ..orm import DimCalendar
 from sqlalchemy import select, func, and_, or_, between
 from datetime import date, timedelta
-from ..kimaballorm.orm import DimCalendar
 
 
 def get_dates_in_year(year):

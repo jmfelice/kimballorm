@@ -1,4 +1,4 @@
-from ..kimaballorm.orm import DimAccount
+from ..orm import DimAccount
 from sqlalchemy import select, func
 
 

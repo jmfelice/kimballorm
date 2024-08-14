@@ -74,6 +74,10 @@ def process_table_from_archive(table_orm, engine, years, months):
     for i in range(len(years)):
         start_time = time.time()
 
+        source_table = table_orm().get_source_entity()
+        if source_table is not None:
+            truncate_table(source_table, engine)
+
         params = {"v_year": years[i], "v_month": months[i]}
         table_name = table_orm().get_table_name()
         sp_schema = "finance_etl"
@@ -83,4 +87,3 @@ def process_table_from_archive(table_orm, engine, years, months):
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"Processing table {table_name} took {execution_time:.4f} seconds.")
-

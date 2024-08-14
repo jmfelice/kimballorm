@@ -1,5 +1,5 @@
+from ..orm import DimBranch
 from sqlalchemy import select, func, and_, between, desc
-from ..kimaballorm.orm import DimBranch
 
 
 def get_current_branches():

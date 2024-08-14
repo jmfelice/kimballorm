@@ -1,4 +1,4 @@
-from ..kimaballorm.orm import DimProductLine
+from ..orm import DimProductLine
 from sqlalchemy import select, func
 from sqlalchemy import and_, between, desc
 

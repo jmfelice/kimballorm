@@ -663,19 +663,11 @@ class FactGeneralLedgerMixin(object):
 class FactGeneralLedger(Base, FactGeneralLedgerMixin, SyncFact):
     __tablename__ = "fact_general_ledger"
     __table_args__ = (
-        ForeignKeyConstraint(
-            ("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]
-        ),
+        ForeignKeyConstraint(("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]),
         ForeignKeyConstraint(("branch_key",), ["finance_dw.dim_branch.branch_key"]),
-        ForeignKeyConstraint(
-            ("corporation_key",), ["finance_dw.dim_corporation.corporation_key"]
-        ),
-        ForeignKeyConstraint(
-            ("category_key",), ["finance_dw.dim_category.category_key"]
-        ),
-        ForeignKeyConstraint(
-            ("description_key",), ["finance_dw.dim_journal_description.description_key"]
-        ),
+        ForeignKeyConstraint(("corporation_key",), ["finance_dw.dim_corporation.corporation_key"]),
+        ForeignKeyConstraint(("category_key",), ["finance_dw.dim_category.category_key"]),
+        ForeignKeyConstraint(("description_key",), ["finance_dw.dim_journal_description.description_key"]),
         ForeignKeyConstraint(
             ("journal_entry_id_key",),
             ["finance_dw.dim_journal_entry.journal_entry_id_key"],
@@ -694,6 +686,12 @@ class FactGeneralLedger(Base, FactGeneralLedgerMixin, SyncFact):
         ),
         {"schema": "finance_dw"},
     )
+    dim_journal_entry = relationship("DimJournalEntry", backref = "fact_general_ledger")
+    dim_category_rel = relationship("DimCategory", backref = "fact_general_ledger")
+    dim_calendar_rel = relationship("DimCalendar", backref = "fact_general_ledger")
+    dim_journal_description_rel = relationship("DimJournalDescription", backref = "fact_general_ledger")
+    dim_corporation_rel = relationship("DimCorporation", backref = "fact_general_ledger")
+    dim_account_rel = relationship("DimAccount", backref = "fact_general_ledger")
 
     @classmethod
     def get_source_entity(cls):
@@ -763,20 +761,11 @@ FactCashFlow.dim_account_rel = relationship("DimAccount", backref="fact_cash_flo
 FactIncomeSummary.dim_branch_rel = relationship(
     "DimBranch", backref="fact_income_summary"
 )
-FactGeneralLedger.dim_journal_entry_rel = relationship(
-    "DimJournalEntry", backref="fact_general_ledger"
-)
 FactAcquisitionCashFlow.dim_corporation_rel = relationship(
     "DimCorporation", backref="fact_acquisition_cash_flow"
 )
 FactBalanceSheet.dim_corporation_rel = relationship(
     "DimCorporation", backref="fact_balance_sheet"
-)
-FactGeneralLedger.dim_category_rel = relationship(
-    "DimCategory", backref="fact_general_ledger"
-)
-FactGeneralLedger.dim_calendar_rel = relationship(
-    "DimCalendar", backref="fact_general_ledger"
 )
 FactBalanceSheet.dim_branch_rel = relationship(
     "DimBranch", backref="fact_balance_sheet"
@@ -785,20 +774,11 @@ FactCashFlow.dim_indirect_cash_flow_category_rel = relationship(
     "DimIndirectCashFlowCategory", backref="fact_cash_flow"
 )
 FactCashFlow.dim_calendar_rel = relationship("DimCalendar", backref="fact_cash_flow")
-FactGeneralLedger.dim_journal_description_rel = relationship(
-    "DimJournalDescription", backref="fact_general_ledger"
-)
-FactGeneralLedger.dim_corporation_rel = relationship(
-    "DimCorporation", backref="fact_general_ledger"
-)
 FactCashFlow.dim_corporation_rel = relationship(
     "DimCorporation", backref="fact_cash_flow"
 )
 BridgeMapCashFlow.dim_account_rel = relationship(
     "DimAccount", backref="bridge_map_cash_flow"
-)
-FactGeneralLedger.dim_account_rel = relationship(
-    "DimAccount", backref="fact_general_ledger"
 )
 FactIncomeSummary.dim_account_rel = relationship(
     "DimAccount", backref="fact_income_summary"
