@@ -2,7 +2,6 @@ from ..orm import DimAccount
 from sqlalchemy import select, func
 
 
-# Define your queries
 def get_active_accounts():
     return select(DimAccount).where(DimAccount.active == 1)
 
