@@ -14,6 +14,38 @@ from .mixin_scd2_crud import SyncSCD2
 Base = declarative_base()
 
 
+class DimAnnum(Base, SyncSCD1):
+    __tablename__ = "dim_annum"
+
+    annum_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "annum_key")
+    annum = Column(String(30), primary_key=False, nullable=True, redshift_sortkey = True)
+    annum_description = Column(String(30), primary_key=False, nullable=True)
+    annum_order = Column(Integer, primary_key=False, nullable=True)
+    redshift_diststyle = "AUTO"
+
+    __table_args__ = (
+        UniqueConstraint("annum"),
+        {"schema": "finance_dw"},
+    )
+    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "annum"},)
+
+
+class DimDuration(Base, SyncSCD1):
+    __tablename__ = "dim_duration"
+
+    duration_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "duration_key")
+    duration = Column(String(3), primary_key=False, nullable=True, redshift_sortkey = True)
+    duration_description = Column(String(30), primary_key=False, nullable=True)
+    duration_order = Column(Integer, primary_key=False, nullable=True)
+    redshift_diststyle = "AUTO"
+
+    __table_args__ = (
+        UniqueConstraint("duration"),
+        {"schema": "finance_dw"},
+    )
+    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "duration"},)
+
+
 class DimAccountMixin(object):
     gl_account_id_key = Column(Integer, primary_key=True, nullable=False)
     gl_account_id = Column(String(10), primary_key=False, nullable=True)
@@ -134,9 +166,7 @@ class DimCalendarMixin(object):
     week = Column(Integer, primary_key=False, nullable=True)
     day_of_week = Column(Integer, primary_key=False, nullable=True)
     holiday = Column(String, primary_key=False, nullable=True)
-    weighted_value = Column(
-        Numeric(precision=4, scale=3), primary_key=False, nullable=True
-    )
+    weighted_value = Column(Numeric(precision=4, scale=3), primary_key=False, nullable=True)
     days_in_month = Column(Integer, primary_key=False, nullable=True)
     name_of_month = Column(String, primary_key=False, nullable=True)
     name_of_month_abb = Column(String, primary_key=False, nullable=True)
@@ -161,21 +191,11 @@ class DimCalendarMixin(object):
     cs_py_daily_fiscal_year = Column(Integer, primary_key=False, nullable=True)
     cs_py_daily_fiscal_week = Column(Integer, primary_key=False, nullable=True)
     first_date_of_cs_py_fiscal_week = Column(Date, primary_key=False, nullable=True)
-    weighted_business_days_mtd = Column(
-        Numeric(precision=8, scale=3), primary_key=False, nullable=True
-    )
-    weighted_business_days_qtd = Column(
-        Numeric(precision=8, scale=3), primary_key=False, nullable=True
-    )
-    weighted_business_days_ytd = Column(
-        Numeric(precision=8, scale=3), primary_key=False, nullable=True
-    )
-    weighted_business_days_ltm = Column(
-        Numeric(precision=8, scale=3), primary_key=False, nullable=True
-    )
-    weighted_business_days_wtd = Column(
-        Numeric(precision=8, scale=3), primary_key=False, nullable=True
-    )
+    weighted_business_days_mtd = Column(Numeric(precision=8, scale=3), primary_key=False, nullable=True)
+    weighted_business_days_qtd = Column(Numeric(precision=8, scale=3), primary_key=False, nullable=True)
+    weighted_business_days_ytd = Column(Numeric(precision=8, scale=3), primary_key=False, nullable=True)
+    weighted_business_days_ltm = Column(Numeric(precision=8, scale=3), primary_key=False, nullable=True)
+    weighted_business_days_wtd = Column(Numeric(precision=8, scale=3), primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "calendar_date"},)
 
@@ -392,6 +412,36 @@ class DimProductLine(Base, DimProductLineMixin, SyncSCD2):
 class DimProductLineSource(Base, DimProductLineMixin, SyncSCD2):
     __tablename__ = "dim_product_line_source"
     __table_args__ = ({"schema": "finance_etl"},)
+
+
+class BridgeTimeTableStandard(Base, SyncSCD1):
+    __tablename__ = "bridge_time_table_standard"
+
+    bridge_time_table_standard = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1,1))
+    period_ending_key = Column(Integer, redshift_sortkey = True, redshift_distkey = "period_ending_key")
+    duration_key = Column(Integer, redshift_sortkey = True, redshift_distkey = "duration_key")
+    annum_key = Column(Integer, redshift_sortkey = True, redshift_distkey = "annum_key")
+    start_date_key = Column(Integer)
+    end_date_key = Column(Integer)
+    weighted_business_days = Column(Numeric(precision=20, scale=8))
+    redshift_diststyle = "AUTO"
+
+    period_ending_key_rel = relationship('DimCalendar', foreign_keys = ["period_ending_key"])
+    duration_key_rel = relationship('DimDuration', foreign_keys = ["duration_key"])
+    annum_key_rel = relationship('DimAnnum', foreign_keys = ["annum_key"])
+    start_date_key_rel = relationship('DimCalendar', foreign_keys = ["start_date_key"])
+    end_date_key_rel = relationship('DimCalendar', foreign_keys = ["end_date_key"])
+
+    __table_args__ = (
+        ForeignKeyConstraint(("period_ending_key",), ["finance_dw.dim_calendar.date_key"]),
+        ForeignKeyConstraint(("duration_key",), ["finance_dw.dim_duration.duration_key"]),
+        ForeignKeyConstraint(("annum_key",), ["finance_dw.dim_annum.annum_key"]),
+        ForeignKeyConstraint(("start_date_key",), ["finance_dw.dim_calendar.date_key"]),
+        ForeignKeyConstraint(("end_date_key",), ["finance_dw.dim_calendar.date_key"]),
+        UniqueConstraint("period_ending_key", "duration_key", "annum_key"),
+        {"schema": "finance_dw"},
+    )
+    __custom_info__ = ({"table_type": "Bridge"},)
 
 
 class BridgeCategoryMixin(object):
@@ -711,9 +761,7 @@ class FactCashFlowSource(Base, FactCashFlowMixin, SyncFact):
 
 
 class FactGeneralLedgerMixin(object):
-    fact_general_ledger_key = Column(
-        Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
-    )
+    fact_general_ledger_key = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1, 1))
     foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
     measures_hash = Column(BIGINT, primary_key=False, nullable=False)
     gl_account_id_key = Column(Integer, primary_key=False, nullable=False)
@@ -723,12 +771,8 @@ class FactGeneralLedgerMixin(object):
     description_key = Column(Integer, primary_key=False, nullable=False)
     journal_entry_id_key = Column(Integer, primary_key=False, nullable=False)
     posting_date_key = Column(Integer, primary_key=False, nullable=False)
-    debit_amount = Column(
-        Numeric(precision=20, scale=8), primary_key=False, nullable=False
-    )
-    credit_amount = Column(
-        Numeric(precision=20, scale=8), primary_key=False, nullable=False
-    )
+    debit_amount = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
+    credit_amount = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     amount = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     __custom_info__ = ({"table_type": "Fact"},)
 
