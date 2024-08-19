@@ -418,13 +418,16 @@ class BridgeTimeTableStandard(Base, SyncSCD1):
     __tablename__ = "bridge_time_table_standard"
 
     bridge_time_table_standard = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1,1))
-    period_ending_key = Column(Integer, redshift_sortkey = True, redshift_distkey = "period_ending_key")
-    duration_key = Column(Integer, redshift_sortkey = True, redshift_distkey = "duration_key")
-    annum_key = Column(Integer, redshift_sortkey = True, redshift_distkey = "annum_key")
+    foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    attribute_hash = Column(BIGINT, primary_key=False, nullable=False)
+    period_ending_key = Column(Integer, redshift_distkey = "period_ending_key")
+    duration_key = Column(Integer)
+    annum_key = Column(Integer)
     start_date_key = Column(Integer)
     end_date_key = Column(Integer)
     weighted_business_days = Column(Numeric(precision=20, scale=8))
     redshift_diststyle = "AUTO"
+    redshift_sortkey = ['period_ending_key', 'duration_key', annum_key]
 
     period_ending_key_rel = relationship('DimCalendar', foreign_keys = ["period_ending_key"])
     duration_key_rel = relationship('DimDuration', foreign_keys = ["duration_key"])
