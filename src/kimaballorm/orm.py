@@ -306,12 +306,8 @@ class DimCorporationSource(Base, DimCorporationMixin, SyncSCD1):
 class DimIndirectCashFlowCategoryMixin(object):
     indirect_cash_flow_category_key = Column(Integer, primary_key=True, nullable=False)
     indirect_cash_flow_category = Column(String(50), primary_key=False, nullable=True)
-    parent_indirect_cash_flow_category = Column(
-        String(50), primary_key=False, nullable=True
-    )
-    indirect_cash_flow_category_order = Column(
-        Integer, primary_key=False, nullable=True
-    )
+    parent_indirect_cash_flow_category = Column(String(50), primary_key=False, nullable=True)
+    indirect_cash_flow_category_order = Column(Integer, primary_key=False, nullable=True)
     isleaf = Column(Integer, primary_key=False, nullable=True)
     level = Column(Integer, primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
@@ -414,9 +410,7 @@ class DimProductLineSource(Base, DimProductLineMixin, SyncSCD2):
     __table_args__ = ({"schema": "finance_etl"},)
 
 
-class BridgeTimeTableStandard(Base, SyncSCD1):
-    __tablename__ = "bridge_time_table_standard"
-
+class BridgeTimeTableStandardMixin(object):
     bridge_time_table_standard = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1,1))
     foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
     attribute_hash = Column(BIGINT, primary_key=False, nullable=False)
@@ -428,6 +422,11 @@ class BridgeTimeTableStandard(Base, SyncSCD1):
     weighted_business_days = Column(Numeric(precision=20, scale=8))
     redshift_diststyle = "AUTO"
     redshift_sortkey = ['period_ending_key', 'duration_key', annum_key]
+    __custom_info__ = ({"table_type": "Bridge"},)
+
+
+class BridgeTimeTableStandard(Base, BridgeTimeTableStandardMixin, SyncSCD1):
+    __tablename__ = "bridge_time_table_standard"
 
     period_ending_key_rel = relationship('DimCalendar', foreign_keys = ["period_ending_key"])
     duration_key_rel = relationship('DimDuration', foreign_keys = ["duration_key"])
@@ -444,7 +443,16 @@ class BridgeTimeTableStandard(Base, SyncSCD1):
         UniqueConstraint("period_ending_key", "duration_key", "annum_key"),
         {"schema": "finance_dw"},
     )
-    __custom_info__ = ({"table_type": "Bridge"},)
+
+    @classmethod
+    def get_source_entity(cls):
+        return BridgeTimeTableStandardSource
+
+
+class BridgeTimeTableStandardSource(Base, BridgeTimeTableStandardMixin, SyncSCD1):
+    __tablename__ = "bridge_time_table_standard_source"
+    action = Column(String(6), primary_key=False, nullable=False)
+    __table_args__ = ({"schema": "finance_etl"},)
 
 
 class BridgeCategoryMixin(object):
@@ -620,9 +628,7 @@ class FactAcquisitionCashFlowSource(Base, FactAcquisitionCashFlowMixin, SyncFact
 
 
 class FactBalanceSheetMixin(object):
-    fact_balance_sheet_key = Column(
-        Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
-    )
+    fact_balance_sheet_key = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1, 1))
     foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
     measures_hash = Column(BIGINT, primary_key=False, nullable=False)
     branch_key = Column(Integer, primary_key=False, nullable=False)
@@ -630,12 +636,8 @@ class FactBalanceSheetMixin(object):
     category_key = Column(Integer, primary_key=False, nullable=False)
     corporation_key = Column(Integer, primary_key=False, nullable=False)
     posting_date_key = Column(Integer, primary_key=False, nullable=False)
-    debit_balance = Column(
-        Numeric(precision=20, scale=8), primary_key=False, nullable=False
-    )
-    credit_balance = Column(
-        Numeric(precision=20, scale=8), primary_key=False, nullable=False
-    )
+    debit_balance = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
+    credit_balance = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     balance = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     __custom_info__ = ({"table_type": "Fact"},)
 
@@ -656,18 +658,10 @@ class FactBalanceSheet(Base, FactBalanceSheetMixin, SyncFact):
 
     __table_args__ = (
         ForeignKeyConstraint(("branch_key",), ["finance_dw.dim_branch.branch_key"]),
-        ForeignKeyConstraint(
-            ("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]
-        ),
-        ForeignKeyConstraint(
-            ("category_key",), ["finance_dw.dim_category.category_key"]
-        ),
-        ForeignKeyConstraint(
-            ("corporation_key",), ["finance_dw.dim_corporation.corporation_key"]
-        ),
-        ForeignKeyConstraint(
-            ("posting_date_key",), ["finance_dw.dim_calendar.date_key"]
-        ),
+        ForeignKeyConstraint(("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]),
+        ForeignKeyConstraint(("category_key",), ["finance_dw.dim_category.category_key"]),
+        ForeignKeyConstraint(("corporation_key",), ["finance_dw.dim_corporation.corporation_key"]),
+        ForeignKeyConstraint(("posting_date_key",), ["finance_dw.dim_calendar.date_key"]),
         UniqueConstraint(
             "branch_key",
             "gl_account_id_key",
