@@ -1,4 +1,4 @@
-from sqlalchemy import Column, UniqueConstraint, ForeignKeyConstraint
+from sqlalchemy import Column, UniqueConstraint, ForeignKeyConstraint, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy import Date
 from sqlalchemy import Integer
@@ -114,14 +114,10 @@ class DimBranchMixin(object):
     zone = Column(String(30), primary_key=False, nullable=True)
     servicing_warehouse = Column(String(10), primary_key=False, nullable=True)
     alternate_warehouse = Column(String(10), primary_key=False, nullable=True)
-    service_charge = Column(
-        Numeric(precision=5, scale=3), primary_key=False, nullable=True
-    )
+    service_charge = Column(Numeric(precision=5, scale=3), primary_key=False, nullable=True)
     bank_id = Column(Integer, primary_key=False, nullable=True)
     bank_name = Column(String(60), primary_key=False, nullable=True)
-    bank_minimum_balance = Column(
-        Numeric(precision=20, scale=8), primary_key=False, nullable=True
-    )
+    bank_minimum_balance = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=True)
     street = Column(String(100), primary_key=False, nullable=True)
     city = Column(String(50), primary_key=False, nullable=True)
     state = Column(String(50), primary_key=False, nullable=True)
@@ -232,37 +228,37 @@ class DimCategoryMixin(object):
 class DimCategory(Base, DimCategoryMixin, SyncSCD1):
     __tablename__ = "dim_category"
 
-    child_bridges = relationship(
-        'BridgeCategory',
-        foreign_keys = ["BridgeCategory.category_key"],
-        back_populates = 'parent_category_rel'
-    )
-    parent_bridges = relationship(
-        'BridgeCategory',
-        foreign_keys = ["BridgeCategory.child_category_key"],
-        back_populates = 'child_category_rel'
-    )
-    general_ledgers = relationship(
-        "FactGeneralLedger",
-        secondary = "finance_dw.bridge_category",
-        primaryjoin = "DimCategory.category_key==BridgeCategory.category_key",
-        secondaryjoin = "BridgeCategory.child_category_key==FactGeneralLedger.category_key",
-        back_populates = "categories"
-    )
-    balance_sheets = relationship(
-        "FactBalanceSheet",
-        secondary = "finance_dw.bridge_category",
-        primaryjoin = "DimCategory.category_key==BridgeCategory.category_key",
-        secondaryjoin = "BridgeCategory.child_category_key==FactBalanceSheet.category_key",
-        back_populates = "categories"
-    )
-    cash_flows = relationship(
-        "FactCashFlow",
-        secondary = "finance_dw.bridge_category",
-        primaryjoin = "DimCategory.category_key==BridgeCategory.category_key",
-        secondaryjoin = "BridgeCategory.child_category_key==FactCashFlow.category_key",
-        back_populates = "categories"
-    )
+    # child_bridges = relationship(
+    #     'BridgeCategory',
+    #     foreign_keys = ["BridgeCategory.category_key"],
+    #     back_populates = 'parent_category_rel'
+    # )
+    # parent_bridges = relationship(
+    #     'BridgeCategory',
+    #     foreign_keys = ["BridgeCategory.child_category_key"],
+    #     back_populates = 'child_category_rel'
+    # )
+    # general_ledgers = relationship(
+    #     "FactGeneralLedger",
+    #     secondary = "finance_dw.bridge_category",
+    #     primaryjoin = "DimCategory.category_key==BridgeCategory.category_key",
+    #     secondaryjoin = "BridgeCategory.child_category_key==FactGeneralLedger.category_key",
+    #     back_populates = "categories"
+    # )
+    # balance_sheets = relationship(
+    #     "FactBalanceSheet",
+    #     secondary = "finance_dw.bridge_category",
+    #     primaryjoin = "DimCategory.category_key==BridgeCategory.category_key",
+    #     secondaryjoin = "BridgeCategory.child_category_key==FactBalanceSheet.category_key",
+    #     back_populates = "categories"
+    # )
+    # cash_flows = relationship(
+    #     "FactCashFlow",
+    #     secondary = "finance_dw.bridge_category",
+    #     primaryjoin = "DimCategory.category_key==BridgeCategory.category_key",
+    #     secondaryjoin = "BridgeCategory.child_category_key==FactCashFlow.category_key",
+    #     back_populates = "categories"
+    # )
     __table_args__ = (UniqueConstraint("category"), {"schema": "finance_dw"}, )
 
     @classmethod
@@ -319,30 +315,30 @@ class DimIndirectCashFlowCategoryMixin(object):
 class DimIndirectCashFlowCategory(Base, DimIndirectCashFlowCategoryMixin, SyncSCD1):
     __tablename__ = "dim_indirect_cash_flow_category"
 
-    child_bridges = relationship(
-        'BridgeIndirectCashFlowCategory',
-        foreign_keys = ["BridgeIndirectCashFlowCategory.indirect_cash_flow_category_key"],
-        back_populates = 'parent_category_rel'
-    )
-    parent_bridges = relationship(
-        'BridgeIndirectCashFlowCategory',
-        foreign_keys = ["BridgeIndirectCashFlowCategory.child_indirect_cash_flow_category_key"],
-        back_populates = 'child_category_rel'
-    )
-    cash_flows = relationship(
-        "FactCashFlow",
-        secondary = "finance_dw.bridge_indirect_cash_flow_category",
-        primaryjoin = "DimIndirectCashFlowCategory.indirect_cash_flow_category_key==BridgeIndirectCashFlowCategory.indirect_cash_flow_category_key",
-        secondaryjoin = "BridgeIndirectCashFlowCategory.child_indirect_cash_flow_category_key==FactCashFlow.indirect_cash_flow_category_key",
-        back_populates = "indirect_cash_flow_categories"
-    )
-    acquired_cash_flows = relationship(
-        "FactAcquisitionCashFlow",
-        secondary = "finance_dw.bridge_indirect_cash_flow_category",
-        primaryjoin = "IndirectCashFlowCategory.indirect_cash_flow_category_key==BridgeIndirectCashFlowCategory.indirect_cash_flow_category_key",
-        secondaryjoin = "BridgeIndirectCashFlowCategory.child_indirect_cash_flow_category_key==FactAcquisitionCashFlow.indirect_cash_flow_category_key",
-        back_populates = "acquired_cash_flow_categories"
-    )
+    # child_bridges = relationship(
+    #     'BridgeIndirectCashFlowCategory',
+    #     foreign_keys = ["BridgeIndirectCashFlowCategory.indirect_cash_flow_category_key"],
+    #     back_populates = 'parent_category_rel'
+    # )
+    # parent_bridges = relationship(
+    #     'BridgeIndirectCashFlowCategory',
+    #     foreign_keys = ["BridgeIndirectCashFlowCategory.child_indirect_cash_flow_category_key"],
+    #     back_populates = 'child_category_rel'
+    # )
+    # cash_flows = relationship(
+    #     "FactCashFlow",
+    #     secondary = "finance_dw.bridge_indirect_cash_flow_category",
+    #     primaryjoin = "DimIndirectCashFlowCategory.indirect_cash_flow_category_key==BridgeIndirectCashFlowCategory.indirect_cash_flow_category_key",
+    #     secondaryjoin = "BridgeIndirectCashFlowCategory.child_indirect_cash_flow_category_key==FactCashFlow.indirect_cash_flow_category_key",
+    #     back_populates = "indirect_cash_flow_categories"
+    # )
+    # acquired_cash_flows = relationship(
+    #     "FactAcquisitionCashFlow",
+    #     secondary = "finance_dw.bridge_indirect_cash_flow_category",
+    #     primaryjoin = "IndirectCashFlowCategory.indirect_cash_flow_category_key==BridgeIndirectCashFlowCategory.indirect_cash_flow_category_key",
+    #     secondaryjoin = "BridgeIndirectCashFlowCategory.child_indirect_cash_flow_category_key==FactAcquisitionCashFlow.indirect_cash_flow_category_key",
+    #     back_populates = "acquired_cash_flow_categories"
+    # )
 
     __table_args__ = (
         UniqueConstraint("indirect_cash_flow_category"),
@@ -428,11 +424,11 @@ class BridgeTimeTableStandardMixin(object):
 class BridgeTimeTableStandard(Base, BridgeTimeTableStandardMixin, SyncSCD1):
     __tablename__ = "bridge_time_table_standard"
 
-    period_ending_key_rel = relationship('DimCalendar', foreign_keys = ["period_ending_key"])
-    duration_key_rel = relationship('DimDuration', foreign_keys = ["duration_key"])
-    annum_key_rel = relationship('DimAnnum', foreign_keys = ["annum_key"])
-    start_date_key_rel = relationship('DimCalendar', foreign_keys = ["start_date_key"])
-    end_date_key_rel = relationship('DimCalendar', foreign_keys = ["end_date_key"])
+    # period_ending_key_rel = relationship('DimCalendar', foreign_keys = ["period_ending_key"])
+    # duration_key_rel = relationship('DimDuration', foreign_keys = ["duration_key"])
+    # annum_key_rel = relationship('DimAnnum', foreign_keys = ["annum_key"])
+    # start_date_key_rel = relationship('DimCalendar', foreign_keys = ["start_date_key"])
+    # end_date_key_rel = relationship('DimCalendar', foreign_keys = ["end_date_key"])
 
     __table_args__ = (
         ForeignKeyConstraint(("period_ending_key",), ["finance_dw.dim_calendar.date_key"]),
@@ -471,8 +467,8 @@ class BridgeCategoryMixin(object):
 class BridgeCategory(Base, BridgeCategoryMixin, SyncFact):
     __tablename__ = "bridge_category"
 
-    parent_category_rel = relationship('DimCategory', foreign_keys = ["category_key"], back_populates = 'child_bridges')
-    child_category_rel = relationship('DimCategory', foreign_keys = ["child_category_key"], back_populates = 'parent_bridges')
+    # parent_category_rel = relationship('DimCategory', foreign_keys = ["category_key"], back_populates = 'child_bridges')
+    # child_category_rel = relationship('DimCategory', foreign_keys = ["child_category_key"], back_populates = 'parent_bridges')
 
     __table_args__ = (
         ForeignKeyConstraint(("category_key",), ["finance_dw.dim_category.category_key"]),
@@ -506,13 +502,12 @@ class BridgeIndirectCashFlowCategoryMixin(object):
 class BridgeIndirectCashFlowCategory(Base, BridgeIndirectCashFlowCategoryMixin, SyncFact):
     __tablename__ = "bridge_indirect_cash_flow_category"
 
-    parent_category_rel = relationship('DimIndirectCashFlowCategory', foreign_keys = ["indirect_cash_flow_category_key"], back_populates = 'child_bridges')
-    child_category_rel = relationship('DimIndirectCashFlowCategory', foreign_keys = ["child_indirect_cash_flow_category_key"], back_populates = 'parent_bridges')
+    # parent_category_rel = relationship('DimIndirectCashFlowCategory', foreign_keys = ["indirect_cash_flow_category_key"], back_populates = 'child_bridges')
+    # child_category_rel = relationship('DimIndirectCashFlowCategory', foreign_keys = ["child_indirect_cash_flow_category_key"], back_populates = 'parent_bridges')
 
     __table_args__ = (
         ForeignKeyConstraint(
-            ("indirect_cash_flow_category_key",),
-            [
+            ("indirect_cash_flow_category_key",), [
                 "finance_dw.dim_indirect_cash_flow_category.indirect_cash_flow_category_key"
             ],
         ),
@@ -539,9 +534,7 @@ class BridgeIndirectCashFlowCategorySource(Base, BridgeIndirectCashFlowCategoryM
 
 
 class BridgeMapCashFlowMixin(object):
-    bridge_map_cash_flow_key = Column(
-        Integer, primary_key=True, nullable=False, redshift_identity=(1, 1)
-    )
+    bridge_map_cash_flow_key = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1, 1))
     gl_account_id_key = Column(Integer, primary_key=False, nullable=True)
     indirect_cash_flow_category_key = Column(Integer, primary_key=False, nullable=True)
     reverse = Column(Integer, primary_key=False, nullable=True)
@@ -555,14 +548,10 @@ class BridgeMapCashFlow(Base, BridgeMapCashFlowMixin, SyncFact):
     indirect_cash_flow_category = relationship("DimIndirectCashFlowCategory", backref = "bridge_map_cash_flow")
 
     __table_args__ = (
-        ForeignKeyConstraint(
-            ("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]
-        ),
+        ForeignKeyConstraint(("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]),
         ForeignKeyConstraint(
             ("indirect_cash_flow_category_key",),
-            [
-                "finance_dw.dim_indirect_cash_flow_category.indirect_cash_flow_category_key"
-            ],
+            ["finance_dw.dim_indirect_cash_flow_category.indirect_cash_flow_category_key"],
         ),
         UniqueConstraint("gl_account_id_key", "indirect_cash_flow_category_key"),
         {"schema": "finance_dw"},
@@ -592,16 +581,16 @@ class FactAcquisitionCashFlowMixin(object):
 class FactAcquisitionCashFlow(Base, FactAcquisitionCashFlowMixin, SyncFact):
     __tablename__ = "fact_acquisition_cash_flow"
 
-    calendar = relationship("DimCalendar", backref = "fact_acquisition_cash_flow")
-    indirect_cash_flow_category = relationship("BridgeIndirectCashFlowCategory", backref = "fact_acquisition_cash_flow")
-    corporation = relationship("DimCorporation", backref = "fact_acquisition_cash_flow")
-    indirect_cash_flow_categories = relationship(
-        "DimIndirectCashFlowCategory",
-        secondary="finance_dw.bridge_indirect_cash_flow_category",
-        primaryjoin="FactAcquisitionCashFlow.bridge_indirect_cash_flow_category_key==BridgeIndirectCashFlowCategory.child_bridge_indirect_cash_flow_category_key",
-        secondaryjoin="BridgeIndirectCashFlowCategory.bridge_indirect_cash_flow_category_key==DimIndirectCashFlowCategory.bridge_indirect_cash_flow_category_key",
-        back_populates="acquired_cash_flows"
-    )
+    # calendar = relationship("DimCalendar", backref = "fact_acquisition_cash_flow")
+    # indirect_cash_flow_category = relationship("BridgeIndirectCashFlowCategory", backref = "fact_acquisition_cash_flow")
+    # corporation = relationship("DimCorporation", backref = "fact_acquisition_cash_flow")
+    # indirect_cash_flow_categories = relationship(
+    #     "DimIndirectCashFlowCategory",
+    #     secondary="finance_dw.bridge_indirect_cash_flow_category",
+    #     primaryjoin="FactAcquisitionCashFlow.bridge_indirect_cash_flow_category_key==BridgeIndirectCashFlowCategory.child_bridge_indirect_cash_flow_category_key",
+    #     secondaryjoin="BridgeIndirectCashFlowCategory.bridge_indirect_cash_flow_category_key==DimIndirectCashFlowCategory.bridge_indirect_cash_flow_category_key",
+    #     back_populates="acquired_cash_flows"
+    # )
 
     __table_args__ = (
         ForeignKeyConstraint(("posting_date_key",), ["finance_dw.dim_calendar.date_key"]),
@@ -644,18 +633,17 @@ class FactBalanceSheetMixin(object):
 
 class FactBalanceSheet(Base, FactBalanceSheetMixin, SyncFact):
     __tablename__ = "fact_balance_sheet"
-    corporation = relationship("DimCorporation", backref = "fact_balance_sheet")
-    branch = relationship("DimBranch", backref = "fact_balance_sheet")
-    gl_account_id = relationship("DimAccount", backref = "fact_balance_sheet")
-    calendar = relationship("DimCalendar", backref = "fact_balance_sheet")
-    categories = relationship(
-        "DimCategory",
-        secondary="finance_dw.bridge_category",
-        primaryjoin="FactBalanceSheet.category_key==BridgeCategory.child_category_key",
-        secondaryjoin="BridgeCategory.category_key==DimCategory.category_key",
-        back_populates="balance_sheets"
-    )
-
+    # corporation = relationship("DimCorporation", backref = "fact_balance_sheet")
+    # branch = relationship("DimBranch", backref = "fact_balance_sheet")
+    # gl_account_id = relationship("DimAccount", backref = "fact_balance_sheet")
+    # calendar = relationship("DimCalendar", backref = "fact_balance_sheet")
+    # categories = relationship(
+    #     "DimCategory",
+    #     secondary="finance_dw.bridge_category",
+    #     primaryjoin="FactBalanceSheet.category_key==BridgeCategory.child_category_key",
+    #     secondaryjoin="BridgeCategory.category_key==DimCategory.category_key",
+    #     back_populates="balance_sheets"
+    # )
     __table_args__ = (
         ForeignKeyConstraint(("branch_key",), ["finance_dw.dim_branch.branch_key"]),
         ForeignKeyConstraint(("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]),
@@ -701,28 +689,25 @@ class FactCashFlowMixin(object):
 
 class FactCashFlow(Base, FactCashFlowMixin, SyncFact):
     __tablename__ = "fact_cash_flow"
-
-    branch = relationship("DimBranch", backref = "fact_cash_flow", foreign_keys = ["branch_key"])
-    indirect_cash_flow_category = relationship("BridgeIndirectCashFlowCategory", backref = "fact_cash_flow", foreign_keys = ["indirect_cash_flow_category_key"])
-    calendar = relationship("DimCalendar", backref = "fact_cash_flow", foreign_keys = ["posting_date_key"])
-    corporation = relationship("DimCorporation", backref = "fact_cash_flow", foreign_keys = ["corporation_key"])
-    gl_account_id = relationship("DimAccount", backref = "fact_cash_flow", foreign_keys = ["gl_account_id_key"])
-    categories = relationship(
-        "DimCategory",
-        secondary="finance_dw.bridge_category",
-        primaryjoin="FactCashFlow.category_key==BridgeCategory.child_category_key",
-        secondaryjoin="BridgeCategory.category_key==DimCategory.category_key",
-        back_populates="cash_flows"
-    )
-    indirect_cash_flow_categories = relationship(
-        "DimIndirectCashFlowCategory",
-        secondary="finance_dw.bridge_indirect_cash_flow_category",
-        primaryjoin="FactCashFlow.bridge_indirect_cash_flow_category_key==BridgeIndirectCashFlowCategory.child_bridge_indirect_cash_flow_category_key",
-        secondaryjoin="BridgeIndirectCashFlowCategory.bridge_indirect_cash_flow_category_key==DimIndirectCashFlowCategory.bridge_indirect_cash_flow_category_key",
-        back_populates="cash_flows"
-    )
-
-
+    # branch = relationship("DimBranch", backref = "fact_cash_flow", foreign_keys = ["branch_key"])
+    # indirect_cash_flow_category = relationship("BridgeIndirectCashFlowCategory", backref = "fact_cash_flow", foreign_keys = ["indirect_cash_flow_category_key"])
+    # calendar = relationship("DimCalendar", backref = "fact_cash_flow", foreign_keys = ["posting_date_key"])
+    # corporation = relationship("DimCorporation", backref = "fact_cash_flow", foreign_keys = ["corporation_key"])
+    # gl_account_id = relationship("DimAccount", backref = "fact_cash_flow", foreign_keys = ["gl_account_id_key"])
+    # categories = relationship(
+    #     "DimCategory",
+    #     secondary="finance_dw.bridge_category",
+    #     primaryjoin="FactCashFlow.category_key==BridgeCategory.child_category_key",
+    #     secondaryjoin="BridgeCategory.category_key==DimCategory.category_key",
+    #     back_populates="cash_flows"
+    # )
+    # indirect_cash_flow_categories = relationship(
+    #     "DimIndirectCashFlowCategory",
+    #     secondary="finance_dw.bridge_indirect_cash_flow_category",
+    #     primaryjoin="FactCashFlow.bridge_indirect_cash_flow_category_key==BridgeIndirectCashFlowCategory.child_bridge_indirect_cash_flow_category_key",
+    #     secondaryjoin="BridgeIndirectCashFlowCategory.bridge_indirect_cash_flow_category_key==DimIndirectCashFlowCategory.bridge_indirect_cash_flow_category_key",
+    #     back_populates="cash_flows"
+    # )
     __table_args__ = (
         ForeignKeyConstraint(("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]),
         ForeignKeyConstraint(("branch_key",), ["finance_dw.dim_branch.branch_key"]),
@@ -730,9 +715,7 @@ class FactCashFlow(Base, FactCashFlowMixin, SyncFact):
         ForeignKeyConstraint(("category_key",), ["finance_dw.dim_category.category_key"]),
         ForeignKeyConstraint(
             ("indirect_cash_flow_category_key",),
-            [
-                "finance_dw.dim_indirect_cash_flow_category.indirect_cash_flow_category_key"
-            ],
+            ["finance_dw.dim_indirect_cash_flow_category.indirect_cash_flow_category_key"],
         ),
         ForeignKeyConstraint(("posting_date_key",), ["finance_dw.dim_calendar.date_key"]),
         UniqueConstraint(
@@ -776,20 +759,19 @@ class FactGeneralLedgerMixin(object):
 
 class FactGeneralLedger(Base, FactGeneralLedgerMixin, SyncFact):
     __tablename__ = "fact_general_ledger"
-    journal_entry = relationship("DimJournalEntry", backref = "fact_general_ledger", foreign_keys = ["journal_entry_id_key"])
-    calendar = relationship("DimCalendar", backref = "fact_general_ledger", foreign_keys = ["posting_date_key"])
-    journal_description = relationship("DimJournalDescription", backref = "fact_general_ledger", foreign_keys = ["description_key"])
-    corporation = relationship("DimCorporation", backref = "fact_general_ledger", foreign_keys = ["corporation_key"])
-    gl_account_id = relationship("DimAccount", backref = "fact_general_ledger", foreign_keys = ["gl_account_id_key"])
-    branch = relationship("DimBranch", backref = "fact_general_ledger", foreign_keys = ["branch_key"])
-    categories = relationship(
-        "DimCategory",
-        secondary="finance_dw.bridge_category",
-        primaryjoin="FactGeneralLedger.category_key==BridgeCategory.child_category_key",
-        secondaryjoin="BridgeCategory.category_key==DimCategory.category_key",
-        back_populates="general_ledgers"
-    )
-
+    # journal_entry = relationship("DimJournalEntry", backref = "fact_general_ledger", foreign_keys = ["journal_entry_id_key"])
+    # calendar = relationship("DimCalendar", backref = "fact_general_ledger", foreign_keys = ["posting_date_key"])
+    # journal_description = relationship("DimJournalDescription", backref = "fact_general_ledger", foreign_keys = ["description_key"])
+    # corporation = relationship("DimCorporation", backref = "fact_general_ledger", foreign_keys = ["corporation_key"])
+    # gl_account_id = relationship("DimAccount", backref = "fact_general_ledger", foreign_keys = ["gl_account_id_key"])
+    # branch = relationship("DimBranch", backref = "fact_general_ledger", foreign_keys = ["branch_key"])
+    # categories = relationship(
+    #     "DimCategory",
+    #     secondary="finance_dw.bridge_category",
+    #     primaryjoin="FactGeneralLedger.category_key==BridgeCategory.child_category_key",
+    #     secondaryjoin="BridgeCategory.category_key==DimCategory.category_key",
+    #     back_populates="general_ledgers"
+    # )
     __table_args__ = (
         ForeignKeyConstraint(("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]),
         ForeignKeyConstraint(("branch_key",), ["finance_dw.dim_branch.branch_key"]),
@@ -837,12 +819,10 @@ class FactIncomeSummaryMixin(object):
 
 class FactIncomeSummary(Base, FactIncomeSummaryMixin, SyncFact):
     __tablename__ = "fact_income_summary"
-
-    gl_acount_id = relationship("DimAccount", backref = "fact_income_summary", foreign_keys=["gl_account_id_key"])
-    corporation = relationship("DimCorporation", backref = "fact_income_summary", foreign_keys=["corporation_key"])
-    calendar = relationship("DimCalendar", backref = "fact_income_summary", foreign_keys=["posting_date_key"])
-    branch = relationship("DimBranch", backref = "fact_income_summary", foreign_keys=["branch_key"])
-
+    # gl_acount_id = relationship("DimAccount", backref = "fact_income_summary", foreign_keys=["gl_account_id_key"])
+    # corporation = relationship("DimCorporation", backref = "fact_income_summary", foreign_keys=["corporation_key"])
+    # calendar = relationship("DimCalendar", backref = "fact_income_summary", foreign_keys=["posting_date_key"])
+    # branch = relationship("DimBranch", backref = "fact_income_summary", foreign_keys=["branch_key"])
     __table_args__ = (
         ForeignKeyConstraint(("branch_key",), ["finance_dw.dim_branch.branch_key"]),
         ForeignKeyConstraint(("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]),
@@ -863,6 +843,3 @@ class FactIncomeSummarySource(Base, FactIncomeSummaryMixin, SyncFact):
     __tablename__ = "fact_income_summary_source"
     action = Column(String(6), primary_key=False, nullable=False)
     __table_args__ = ({"schema": "finance_etl"},)
-
-
-
