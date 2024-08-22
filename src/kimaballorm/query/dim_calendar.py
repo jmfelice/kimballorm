@@ -72,14 +72,27 @@ def get_weekends_in_year(year):
     )
 
 
-def get_last_days_of_months(year):
-    subquery = select(func.max(DimCalendar.day_of_month)).where(
-        and_(DimCalendar.year == year, DimCalendar.month == DimCalendar.month)
-    ).group_by(DimCalendar.month).scalar_subquery()
-
-    return select(DimCalendar).where(
-        and_(DimCalendar.year == year, DimCalendar.day_of_month == subquery)
+def get_end_of_month_dates(year = None):
+    query = (
+        select(DimCalendar.date_key, DimCalendar.calendar_date)
+        .where(DimCalendar.calendar_date == DimCalendar.days_in_month)
     )
+    if year is not None:
+        query = query.where(DimCalendar.year == year)
+    return query
+
+
+def get_end_of_month_series(calendar_date, months_back):
+    query = (
+        select(DimCalendar.date_key, DimCalendar.calendar_date)
+        .where(DimCalendar.calendar_date == DimCalendar.days_in_month)
+    )
+    query = query.where(between(
+        DimCalendar.calender_date,
+        calendar_date,
+        func.date_add("month", -months_back, calendar_date))
+    )
+    return query
 
 
 def get_dates_with_high_weighted_value(threshold):
