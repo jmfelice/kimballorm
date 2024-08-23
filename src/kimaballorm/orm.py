@@ -382,6 +382,7 @@ class DimProductLineMixin(object):
     product_line = Column(Integer, primary_key=False, nullable=True)
     product_line_description = Column(String(100), primary_key=False, nullable=True)
     unit_of_measure = Column(String(10), primary_key=False, nullable=True)
+    factor = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=True)
     scd2_start_date = Column(Date, primary_key=False, nullable=True)
     scd2_end_date = Column(Date, primary_key=False, nullable=True)
     current_flag = Column(Integer, primary_key=False, nullable=True)
