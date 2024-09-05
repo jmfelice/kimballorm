@@ -61,7 +61,7 @@ def from_dim_calendar_get_end_of_month_dates(year = None):
 
 def from_dim_calendar_get_end_of_month_series(calendar_date, months_back):
     query = (
-        select(DimCalendar.date_key, DimCalendar.calendar_date)
+        select(DimCalendar.calendar_date)
         .where(and_(
             DimCalendar.day_of_month == DimCalendar.days_in_month,
             between(

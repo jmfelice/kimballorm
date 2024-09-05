@@ -760,19 +760,7 @@ class FactGeneralLedgerMixin(object):
 
 class FactGeneralLedger(Base, FactGeneralLedgerMixin, SyncFact):
     __tablename__ = "fact_general_ledger"
-    # journal_entry = relationship("DimJournalEntry", backref = "fact_general_ledger", foreign_keys = ["journal_entry_id_key"])
-    # calendar = relationship("DimCalendar", backref = "fact_general_ledger", foreign_keys = ["posting_date_key"])
-    # journal_description = relationship("DimJournalDescription", backref = "fact_general_ledger", foreign_keys = ["description_key"])
-    # corporation = relationship("DimCorporation", backref = "fact_general_ledger", foreign_keys = ["corporation_key"])
-    # gl_account_id = relationship("DimAccount", backref = "fact_general_ledger", foreign_keys = ["gl_account_id_key"])
-    # branch = relationship("DimBranch", backref = "fact_general_ledger", foreign_keys = ["branch_key"])
-    # categories = relationship(
-    #     "DimCategory",
-    #     secondary="finance_dw.bridge_category",
-    #     primaryjoin="FactGeneralLedger.category_key==BridgeCategory.child_category_key",
-    #     secondaryjoin="BridgeCategory.category_key==DimCategory.category_key",
-    #     back_populates="general_ledgers"
-    # )
+
     __table_args__ = (
         ForeignKeyConstraint(("gl_account_id_key",), ["finance_dw.dim_account.gl_account_id_key"]),
         ForeignKeyConstraint(("branch_key",), ["finance_dw.dim_branch.branch_key"]),

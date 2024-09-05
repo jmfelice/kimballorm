@@ -4,7 +4,10 @@ import os
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
-from kimaballorm.orm import Base
+from sqlalchemy import MetaData
+from kimballorm.orm import Base as base_dw
+from kimballorm.metadata_orm import Base as base_meta
+
 
 load_dotenv()
 
@@ -17,10 +20,21 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
-target_metadata = Base.metadata
+# target_metadata = Base.metadata
+def combine_metadata(*args):
+    m = MetaData()
+    for metadata in args:
+        for t in metadata.tables.values():
+            t.tometadata(m)
+    return m
+
+
+target_metadata = combine_metadata(base_dw.metadata, base_meta.metadata)
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -30,7 +44,7 @@ config.set_main_option('sqlalchemy.url', os.environ.get('DB_URL'))
 def include_object(object, name, type_, reflected, compare_to):
     if type_ == "table":
         # List the schemas you want to include
-        allowed_schemas = ['finance_dw', 'finance_etl']
+        allowed_schemas = ['finance_dw', 'finance_etl', 'finance_meta']
         return object.schema in allowed_schemas
     return True
 
