@@ -21,12 +21,13 @@ class DimAnnum(Base, SyncSCD1):
     annum = Column(String(30), primary_key=False, nullable=True, redshift_sortkey = True)
     annum_description = Column(String(30), primary_key=False, nullable=True)
     annum_order = Column(Integer, primary_key=False, nullable=True)
-    redshift_diststyle = "AUTO"
+    redshift_diststyle = "KEY"
 
     __table_args__ = (
         UniqueConstraint("annum"),
         {"schema": "finance_dw"},
     )
+
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "annum"},)
 
 
@@ -37,7 +38,7 @@ class DimDuration(Base, SyncSCD1):
     duration = Column(String(3), primary_key=False, nullable=True, redshift_sortkey = True)
     duration_description = Column(String(30), primary_key=False, nullable=True)
     duration_order = Column(Integer, primary_key=False, nullable=True)
-    redshift_diststyle = "AUTO"
+    redshift_diststyle = "KEY"
 
     __table_args__ = (
         UniqueConstraint("duration"),
@@ -47,13 +48,14 @@ class DimDuration(Base, SyncSCD1):
 
 
 class DimAccountMixin(object):
-    gl_account_id_key = Column(Integer, primary_key=True, nullable=False)
-    gl_account_id = Column(String(10), primary_key=False, nullable=True)
+    gl_account_id_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "gl_account_key")
+    gl_account_id = Column(String(10), primary_key=False, nullable=True, redshift_sortkey = True)
     gl_account_description = Column(String(50), primary_key=False, nullable=True)
-    account_class = Column(String(1), primary_key=False, nullable=True)
+    account_class = Column(String(1), primary_key=False, nullable=True, redshift_sortkey = True)
     gl_category = Column(String(50), primary_key=False, nullable=True)
     intercompany_flag = Column(Integer, primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
+    redshift_diststyle = "KEY"
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "gl_account_id"},)
 
 
@@ -75,11 +77,12 @@ class DimAccountSource(Base, DimAccountMixin, SyncSCD1):
 
 
 class DimAccountClassMixin(object):
-    account_class_key = Column(Integer, primary_key=True, nullable=False)
-    account_class = Column(String(1), primary_key=False, nullable=True)
+    account_class_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "account_class_key")
+    account_class = Column(String(1), primary_key=False, nullable=True, redshift_sortkey = True)
     account_class_description = Column(String(9), primary_key=False, nullable=True)
     account_class_order = Column(Integer, primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
+    redshift_diststyle = "KEY"
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": ["account_class"]},)
 
 
@@ -101,17 +104,17 @@ class DimAccountClassSource(Base, DimAccountClassMixin, SyncSCD1):
 
 
 class DimBranchMixin(object):
-    branch_key = Column(Integer, primary_key=True, nullable=False)
-    branch = Column(Integer, primary_key=False, nullable=True)
+    branch_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "branch_key")
+    branch = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
     branch_abb = Column(String(30), primary_key=False, nullable=True)
     branch_name = Column(String(50), primary_key=False, nullable=True)
-    branch_type = Column(String(30), primary_key=False, nullable=True)
+    branch_type = Column(String(30), primary_key=False, nullable=True, redshift_sortkey = True)
     is_branch = Column(Integer, primary_key=False, nullable=True)
     corporation = Column(Integer, primary_key=False, nullable=True)
-    manager = Column(String(50), primary_key=False, nullable=True)
+    manager = Column(String(50), primary_key=False, nullable=True, redshift_sortkey = True)
     customer_account = Column(Integer, primary_key=False, nullable=True)
-    region = Column(String(30), primary_key=False, nullable=True)
-    zone = Column(String(30), primary_key=False, nullable=True)
+    region = Column(String(30), primary_key=False, nullable=True, redshift_sortkey = True)
+    zone = Column(String(30), primary_key=False, nullable=True, redshift_sortkey = True)
     servicing_warehouse = Column(String(10), primary_key=False, nullable=True)
     alternate_warehouse = Column(String(10), primary_key=False, nullable=True)
     service_charge = Column(Numeric(precision=5, scale=3), primary_key=False, nullable=True)
@@ -130,6 +133,7 @@ class DimBranchMixin(object):
     scd2_end_date = Column(Date, primary_key=False, nullable=True)
     current_flag = Column(Integer, primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
+    redshift_diststyle = "KEY"
     __custom_info__ = ({"table_type": "SCD_2", "natural_key": "branch"},)
 
 
@@ -151,11 +155,11 @@ class DimBranchSource(Base, DimBranchMixin, SyncSCD2):
 
 
 class DimCalendarMixin(object):
-    date_key = Column(Integer, primary_key=True, nullable=False)
-    calendar_date = Column(Date, primary_key=False, nullable=True)
-    year = Column(Integer, primary_key=False, nullable=True)
-    quarter = Column(Integer, primary_key=False, nullable=True)
-    month = Column(Integer, primary_key=False, nullable=True)
+    date_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "date_key")
+    calendar_date = Column(Date, primary_key=False, nullable=True, redshift_sortkey = True)
+    year = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
+    quarter = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
+    month = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
     name_of_day = Column(String, primary_key=False, nullable=True)
     day_of_month = Column(Integer, primary_key=False, nullable=True)
     day_of_year = Column(Integer, primary_key=False, nullable=True)
@@ -193,6 +197,7 @@ class DimCalendarMixin(object):
     weighted_business_days_ltm = Column(Numeric(precision=8, scale=3), primary_key=False, nullable=True)
     weighted_business_days_wtd = Column(Numeric(precision=8, scale=3), primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
+    redshift_diststyle = "KEY"
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "calendar_date"},)
 
 
@@ -214,14 +219,15 @@ class DimCalendarSource(Base, DimCalendarMixin, SyncSCD1):
 
 
 class DimCategoryMixin(object):
-    category_key = Column(Integer, primary_key=True, nullable=False)
-    category = Column(String(50), primary_key=False, nullable=True)
+    category_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "category_key")
+    category = Column(String(50), primary_key=False, nullable=True, redshift_sortkey = True)
     parent_category = Column(String(50), primary_key=False, nullable=True)
     category_class = Column(String(1), primary_key=False, nullable=True)
     category_order = Column(Integer, primary_key=False, nullable=True)
     isleaf = Column(Integer, primary_key=False, nullable=True)
     level = Column(Integer, primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
+    redshift_diststyle = "KEY"
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "category"},)
 
 
@@ -272,13 +278,14 @@ class DimCategorySource(Base, DimCategoryMixin, SyncSCD1):
 
 
 class DimCorporationMixin(object):
-    corporation_key = Column(Integer, primary_key=True, nullable=False)
-    corporation = Column(Integer, primary_key=False, nullable=True)
-    corporation_name = Column(String(50), primary_key=False, nullable=True)
+    corporation_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "corporation_key")
+    corporation = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
+    corporation_name = Column(String(50), primary_key=False, nullable=True, redshift_sortkey = True)
     corporation_abbr = Column(String(30), primary_key=False, nullable=True)
     elimination_branch = Column(Integer, primary_key=False, nullable=True)
     federal_id_number = Column(Integer, primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
+    redshift_diststyle = "KEY"
     __custom_info__ = ({"table_type": "SCD_1", "natural_key": "corporation"},)
 
 
@@ -300,13 +307,14 @@ class DimCorporationSource(Base, DimCorporationMixin, SyncSCD1):
 
 
 class DimIndirectCashFlowCategoryMixin(object):
-    indirect_cash_flow_category_key = Column(Integer, primary_key=True, nullable=False)
-    indirect_cash_flow_category = Column(String(50), primary_key=False, nullable=True)
+    indirect_cash_flow_category_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "indirect_cash_flow_category_key")
+    indirect_cash_flow_category = Column(String(50), primary_key=False, nullable=True, redshift_sortkey = True)
     parent_indirect_cash_flow_category = Column(String(50), primary_key=False, nullable=True)
     indirect_cash_flow_category_order = Column(Integer, primary_key=False, nullable=True)
     isleaf = Column(Integer, primary_key=False, nullable=True)
     level = Column(Integer, primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
+    redshift_diststyle = "KEY"
     __custom_info__ = (
         {"table_type": "SCD_1", "natural_key": "indirect_cash_flow_category"},
     )
@@ -357,8 +365,9 @@ class DimIndirectCashFlowCategorySource(Base, DimIndirectCashFlowCategoryMixin, 
 
 class DimJournalDescription(Base, UtilityBase):
     __tablename__ = "dim_journal_description"
-    description_key = Column(Integer, primary_key=True, nullable=False)
-    description = Column(String(100), primary_key=False, nullable=True)
+    description_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "description_key")
+    description = Column(String(100), primary_key=False, nullable=True, redshift_sortkey = True)
+    redshift_diststyle = "KEY"
     __table_args__ = (
         UniqueConstraint("description"),
         {"schema": "finance_dw"},
@@ -368,8 +377,9 @@ class DimJournalDescription(Base, UtilityBase):
 
 class DimJournalEntry(Base, UtilityBase):
     __tablename__ = "dim_journal_entry"
-    journal_entry_id_key = Column(Integer, primary_key=True, nullable=False)
-    journal_entry_id = Column(Numeric(precision=14, scale=0), primary_key=False, nullable=True)
+    journal_entry_id_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "journal_entry_id_key")
+    journal_entry_id = Column(Numeric(precision=14, scale=0), primary_key=False, nullable=True, redshift_sortkey = True)
+    redshift_diststyle = "KEY"
     __table_args__ = (
         UniqueConstraint("journal_entry_id"),
         {"schema": "finance_dw"},
@@ -378,8 +388,8 @@ class DimJournalEntry(Base, UtilityBase):
 
 
 class DimProductLineMixin(object):
-    product_line_key = Column(Integer, primary_key=True, nullable=False)
-    product_line = Column(Integer, primary_key=False, nullable=True)
+    product_line_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "product_line_key")
+    product_line = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
     product_line_description = Column(String(100), primary_key=False, nullable=True)
     unit_of_measure = Column(String(10), primary_key=False, nullable=True)
     factor = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=True)
@@ -387,6 +397,7 @@ class DimProductLineMixin(object):
     scd2_end_date = Column(Date, primary_key=False, nullable=True)
     current_flag = Column(Integer, primary_key=False, nullable=True)
     active = Column(Integer, primary_key=False, nullable=False)
+    redshift_diststyle = "KEY"
     __custom_info__ = ({"table_type": "SCD_2", "natural_key": "product_line"},)
 
 
@@ -407,18 +418,59 @@ class DimProductLineSource(Base, DimProductLineMixin, SyncSCD2):
     __table_args__ = ({"schema": "finance_etl"},)
 
 
+class DimPartMixin(object):
+    part_id_key = Column(Integer, primary_key=True, nullable=False)
+    primary_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    attribute_hash = Column(BIGINT, primary_key=False, nullable=False)
+    sku = Column(Numeric(precision = 22, scale = 0))
+    part_id = Column(String(24))
+    part_id_2 = Column(String(24))
+    product_line = Column(Numeric(precision = 6, scale = 0))
+    part_description = Column(String(400))
+    part_description_specific = Column(String(160))
+    part_category = Column(String(60))
+    part_subcategory = Column(String(60))
+    part_segment = Column(String(60))
+    popularity = Column(String(4))
+    master_installer_flag = Column(Integer)
+    active = Column(String(6))
+    __custom_info__ = ({"table_type": "SCD1"},)
+
+
+class DimPart(Base, DimPartMixin, SyncSCD1):
+    __tablename__ = "dim_part"
+    __table_args__ = (
+        {
+            "schema": "finance_dw",
+            "redshift_diststyle": "KEY",
+            "redshift_distkey": "part_id_key",
+            "redshift_interleaved_sortkey": ("part_id", "product_line", "part_category", "part_subcategory", "part_segment")
+        },
+    )
+
+    @classmethod
+    def get_source_entity(cls):
+        return DimPartSource
+
+
+class DimPartSource(Base, DimPartMixin, SyncSCD1):
+    __tablename__ = "dim_part_source"
+    action = Column(String(6), primary_key=False, nullable=False)
+    __table_args__ = ({"schema": "finance_etl"},)
+
+
 class BridgeTimeTableStandardMixin(object):
     bridge_time_table_standard = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1,1))
     foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
     attribute_hash = Column(BIGINT, primary_key=False, nullable=False)
-    period_ending_key = Column(Integer, redshift_distkey = "period_ending_key")
+    period_ending_key = Column(Integer)
     duration_key = Column(Integer)
     annum_key = Column(Integer)
     start_date_key = Column(Integer)
     end_date_key = Column(Integer)
     weighted_business_days = Column(Numeric(precision=20, scale=8))
     redshift_diststyle = "AUTO"
-    redshift_sortkey = ['period_ending_key', 'duration_key', annum_key]
+    redshift_sortkey = [period_ending_key, duration_key, annum_key]
     __custom_info__ = ({"table_type": "Bridge"},)
 
 
@@ -438,7 +490,10 @@ class BridgeTimeTableStandard(Base, BridgeTimeTableStandardMixin, SyncSCD1):
         ForeignKeyConstraint(("start_date_key",), ["finance_dw.dim_calendar.date_key"]),
         ForeignKeyConstraint(("end_date_key",), ["finance_dw.dim_calendar.date_key"]),
         UniqueConstraint("period_ending_key", "duration_key", "annum_key"),
-        {"schema": "finance_dw"},
+        {
+            "schema": "finance_dw",
+            "redshift_interleaved_sortkey": ("period_ending_key", "duration_key", "annum_key")
+        },
     )
 
     @classmethod
@@ -454,14 +509,15 @@ class BridgeTimeTableStandardSource(Base, BridgeTimeTableStandardMixin, SyncSCD1
 
 class BridgeCategoryMixin(object):
     bridge_category_key = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1, 1))
-    category_key = Column(Integer, primary_key=False, nullable=True)
-    child_category_key = Column(Integer, primary_key=False, nullable=True)
+    category_key = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
+    child_category_key = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
     category = Column(String(50), primary_key=False, nullable=True)
     child_category = Column(String(50), primary_key=False, nullable=True)
     category_order = Column(Integer, primary_key=False, nullable=True)
     category_class = Column(String(1), primary_key=False, nullable=True)
     level = Column(Integer, primary_key=False, nullable=True)
     isleaf = Column(Integer, primary_key=False, nullable=True)
+    redshift_diststyle = "AUTO"
     __custom_info__ = ({"table_type": "Bridge"},)
 
 
@@ -490,13 +546,14 @@ class BridgeCategorySource(Base, BridgeCategoryMixin, SyncFact):
 
 class BridgeIndirectCashFlowCategoryMixin(object):
     bridge_indirect_cash_flow_category_key = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1, 1))
-    indirect_cash_flow_category_key = Column(Integer, primary_key=False, nullable=True)
-    child_indirect_cash_flow_category_key = Column(Integer, primary_key=False, nullable=True)
+    indirect_cash_flow_category_key = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
+    child_indirect_cash_flow_category_key = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
     indirect_cash_flow_category = Column(String(50), primary_key=False, nullable=True)
     child_indirect_cash_flow_category = Column(String(50), primary_key=False, nullable=True)
     indirect_cash_flow_category_order = Column(Integer, primary_key=False, nullable=True)
     level = Column(Integer, primary_key=False, nullable=True)
     isleaf = Column(Integer, primary_key=False, nullable=True)
+    redshift_diststyle = "AUTO"
     __custom_info__ = ({"table_type": "Bridge"},)
 
 
@@ -536,9 +593,10 @@ class BridgeIndirectCashFlowCategorySource(Base, BridgeIndirectCashFlowCategoryM
 
 class BridgeMapCashFlowMixin(object):
     bridge_map_cash_flow_key = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1, 1))
-    gl_account_id_key = Column(Integer, primary_key=False, nullable=True)
-    indirect_cash_flow_category_key = Column(Integer, primary_key=False, nullable=True)
+    gl_account_id_key = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
+    indirect_cash_flow_category_key = Column(Integer, primary_key=False, nullable=True, redshift_sortkey = True)
     reverse = Column(Integer, primary_key=False, nullable=True)
+    redshift_diststyle = "AUTO"
     __custom_info__ = ({"table_type": "Bridge"},)
 
 
@@ -576,6 +634,7 @@ class FactAcquisitionCashFlowMixin(object):
     corporation_key = Column(Integer, primary_key=False, nullable=False)
     indirect_cash_flow_category_key = Column(Integer, primary_key=False, nullable=False)
     cash_flow = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
+    redshift_diststyle = "AUTO"
     __custom_info__ = ({"table_type": "Fact"},)
 
 
@@ -629,6 +688,7 @@ class FactBalanceSheetMixin(object):
     debit_balance = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     credit_balance = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     balance = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
+    redshift_diststyle = "AUTO"
     __custom_info__ = ({"table_type": "Fact"},)
 
 
@@ -685,6 +745,7 @@ class FactCashFlowMixin(object):
     general_ledger = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     acquisition = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     cash_flow = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
+    redshift_diststyle = "AUTO"
     __custom_info__ = ({"table_type": "Fact"},)
 
 
@@ -755,6 +816,7 @@ class FactGeneralLedgerMixin(object):
     debit_amount = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     credit_amount = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     amount = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
+    redshift_diststyle = "AUTO"
     __custom_info__ = ({"table_type": "Fact"},)
 
 
@@ -803,6 +865,7 @@ class FactIncomeSummaryMixin(object):
     debit_amount = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     credit_amount = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
     amount = Column(Numeric(precision=20, scale=8), primary_key=False, nullable=False)
+    redshift_diststyle = "AUTO"
     __custom_info__ = ({"table_type": "Fact"},)
 
 
@@ -832,3 +895,55 @@ class FactIncomeSummarySource(Base, FactIncomeSummaryMixin, SyncFact):
     __tablename__ = "fact_income_summary_source"
     action = Column(String(6), primary_key=False, nullable=False)
     __table_args__ = ({"schema": "finance_etl"},)
+
+
+class FactInventoryBalanceMixin(object):
+    fact_inventory_balance_key = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1,1))
+    foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    measures_hash = Column(BIGINT, primary_key=False, nullable=False)
+    posting_date_key = Column(Integer)
+    branch_key = Column(Integer)
+    product_line_key = Column(Integer)
+    part_id_key = Column(Integer)
+    quantity = Column(Numeric(20, 8))
+    store_cost_balance = Column(Numeric(20, 8))
+    core_cost_balance = Column(Numeric(20, 8))
+    warehouse_cost_balance = Column(Numeric(20, 8))
+    redshift_diststyle = "AUTO"
+    __custom_info__ = ({"table_type": "Fact"},)
+
+
+class FactInventoryBalance(Base, FactInventoryBalanceMixin, SyncFact):
+    __tablename__ = "fact_inventory_balance"
+    __table_args__ = (
+        {
+            "schema": "finance_dw",
+            "redshift_interleaved_sortkey": ("posting_date_key", "branch_key", "product_line_key", "part_id_key")
+        },
+    )
+
+
+class FactInventoryChangeMixin(object):
+    fact_inventory_change_key = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1,1))
+    foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    measures_hash = Column(BIGINT, primary_key=False, nullable=False)
+    posting_date_key = Column(Integer)
+    branch_key = Column(Integer)
+    product_line_key = Column(Integer)
+    part_id_key = Column(Integer)
+    quantity = Column(Numeric(20, 8))
+    store_cost_change = Column(Numeric(20, 8))
+    core_cost_change = Column(Numeric(20, 8))
+    warehouse_cost_change = Column(Numeric(20, 8))
+    redshift_diststyle = "AUTO"
+    __custom_info__ = ({"table_type": "Fact"},)
+
+
+class FactInventorychange(Base, FactInventoryChangeMixin, SyncFact):
+    __tablename__ = "fact_inventory_change"
+    __table_args__ = (
+        {
+            "schema": "finance_dw",
+            "redshift_interleaved_sortkey": ("posting_date_key", "branch_key", "product_line_key", "part_id_key")
+        },
+    )
