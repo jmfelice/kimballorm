@@ -14,37 +14,74 @@ from .mixin_scd2_crud import SyncSCD2
 Base = declarative_base()
 
 
-class DimAnnum(Base, SyncSCD1):
-    __tablename__ = "dim_annum"
-
-    annum_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "annum_key")
-    annum = Column(String(30), primary_key=False, nullable=True, redshift_sortkey = True)
+class DimAnnumMixin(object):
+    annum_key = Column(Integer, primary_key=True, nullable=False)
+    primary_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    attribute_hash = Column(BIGINT, primary_key=False, nullable=False)
+    annum = Column(String(30), primary_key=False, nullable=True)
     annum_description = Column(String(30), primary_key=False, nullable=True)
     annum_order = Column(Integer, primary_key=False, nullable=True)
+    active = Column(Integer, primary_key=False, nullable=True)
+    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "annum"},)
+
+
+class DimAnnum(Base, DimAnnumMixin, SyncSCD1):
+    __tablename__ = "dim_annum"
     redshift_diststyle = "KEY"
 
     __table_args__ = (
         UniqueConstraint("annum"),
-        {"schema": "finance_dw"},
+        {
+            "schema": "finance_dw",
+            "redshift_distkey": "annum_key",
+            "redshift_sortkey": "annum"
+        },
     )
 
-    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "annum"},)
+    @classmethod
+    def get_source_entity(cls):
+        return DimAnnumSource
 
 
-class DimDuration(Base, SyncSCD1):
-    __tablename__ = "dim_duration"
+class DimAnnumSource(Base, DimAnnumMixin, SyncSCD1):
+    __tablename__ = "dim_annum_source"
+    action = Column(String(6), primary_key=False, nullable=True)
+    __table_args__ = ({"schema": "finance_etl"},)
 
-    duration_key = Column(Integer, primary_key=True, nullable=False, redshift_distkey = "duration_key")
-    duration = Column(String(3), primary_key=False, nullable=True, redshift_sortkey = True)
+
+class DimDurationMixin(object):
+    duration_key = Column(Integer, primary_key=True, nullable=False)
+    primary_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    attribute_hash = Column(BIGINT, primary_key=False, nullable=False)
+    duration = Column(String(3), primary_key=False, nullable=True)
     duration_description = Column(String(30), primary_key=False, nullable=True)
     duration_order = Column(Integer, primary_key=False, nullable=True)
+    active = Column(Integer, primary_key=False, nullable=True)
+    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "duration"},)
+
+
+class DimDuration(Base, DimDurationMixin, SyncSCD1):
+    __tablename__ = "dim_duration"
     redshift_diststyle = "KEY"
 
     __table_args__ = (
         UniqueConstraint("duration"),
-        {"schema": "finance_dw"},
+        {
+            "schema": "finance_dw",
+            "redshift_distkey": "duration_key",
+            "redshift_sortkey": "duration"
+        },
     )
-    __custom_info__ = ({"table_type": "SCD_1", "natural_key": "duration"},)
+
+    @classmethod
+    def get_source_entity(cls):
+        return DimDurationSource
+
+
+class DimDurationSource(Base, DimDurationMixin, SyncSCD1):
+    __tablename__ = "dim_duration_source"
+    action = Column(String(6), primary_key=False, nullable=True)
+    __table_args__ = ({"schema": "finance_etl"},)
 
 
 class DimAccountMixin(object):
@@ -503,6 +540,43 @@ class BridgeTimeTableStandard(Base, BridgeTimeTableStandardMixin, SyncSCD1):
 
 class BridgeTimeTableStandardSource(Base, BridgeTimeTableStandardMixin, SyncSCD1):
     __tablename__ = "bridge_time_table_standard_source"
+    action = Column(String(6), primary_key=False, nullable=False)
+    __table_args__ = ({"schema": "finance_etl"},)
+
+
+class BridgeTimeTableCompMixin(object):
+    bridge_time_table_comp = Column(Integer, primary_key=True, nullable=False, redshift_identity=(1,1))
+    foreign_key_hash = Column(BIGINT, primary_key=False, nullable=False)
+    attribute_hash = Column(BIGINT, primary_key=False, nullable=False)
+    branch_key = Column(Integer)
+    period_ending_key = Column(Integer)
+    duration_key = Column(Integer)
+    annum_key = Column(Integer)
+    start_date_key = Column(Integer)
+    end_date_key = Column(Integer)
+    weighted_business_days = Column(Numeric(precision=20, scale=8))
+    redshift_diststyle = "AUTO"
+    __custom_info__ = ({"table_type": "Bridge"},)
+
+
+class BridgeTimeTableComp(Base, BridgeTimeTableCompMixin, SyncFact):
+    __tablename__ = "bridge_time_table_comp"
+
+    __table_args__ = (
+        UniqueConstraint("branch_key", "period_ending_key", "duration_key", "annum_key"),
+        {
+            "schema": "finance_dw",
+            "redshift_interleaved_sortkey": ("branch_key", "period_ending_key", "duration_key", "annum_key")
+        },
+    )
+
+    @classmethod
+    def get_source_entity(cls):
+        return BridgeTimeTableCompSource
+
+
+class BridgeTimeTableCompSource(Base, BridgeTimeTableCompMixin, SyncFact):
+    __tablename__ = "bridge_time_table_comp_source"
     action = Column(String(6), primary_key=False, nullable=False)
     __table_args__ = ({"schema": "finance_etl"},)
 
